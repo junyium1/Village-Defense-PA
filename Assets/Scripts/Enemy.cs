@@ -3,33 +3,57 @@ using UnityEngine.UI;
 
 public class Enemy : MonoBehaviour
 {
-    [Header("Stats")]
+    [Header("Stats de base")]
     public float speed = 10f;
+    public float turnSpeed = 10f;
     public float health = 100f;
-    public int damageToVillage = 1; // Dégâts infligés au village
+    public int damageToVillage = 1;
+
+    [Header("Assiègement du Village")]
+    public float roamRadius = 4f; // La taille de la zone où ils se baladent
+    private bool isRoaming = false; // Permet de savoir dans quel état est l'ennemi
+    private Vector3 roamTargetPoint; // Le point aléatoire où il va
+    private Transform villageTransform;
 
     [Header("Unity Setup")]
     public Image healthBar;
 
-    private Transform target;
-    private int wavepointIndex = 0; // Quel point on vise actuellement
+    private Transform pathTarget;
+    private int wavepointIndex = 0;
     private float startHealth;
 
     void Start()
     {
         startHealth = health;
-        // La cible devient le premier point du chemin
-        target = Waypoints.points[0];
+        pathTarget = Waypoints.points[0];
     }
 
     void Update()
     {
-        // Mouvement vers le waypoint actuel
-        Vector3 dir = target.position - transform.position;
-        transform.Translate(dir.normalized * speed * Time.deltaTime, Space.World);
+        if (!isRoaming)
+        {
+            MoveAlongPath();
+        }
+        else
+        {
+            RoamAroundVillage();
+        }
+    }
 
-        // Si on est très proche du waypoint (0.2f de distance)
-        if (Vector3.Distance(transform.position, target.position) <= 0.2f)
+    // --- ETAT 1 : SUIVRE LE CHEMIN ---
+    void MoveAlongPath()
+    {
+        Vector3 dir = pathTarget.position - transform.position;
+
+        if (dir != Vector3.zero)
+        {
+            Quaternion lookRotation = Quaternion.LookRotation(dir);
+            transform.rotation = Quaternion.Lerp(transform.rotation, lookRotation, Time.deltaTime * turnSpeed);
+        }
+
+        transform.position = Vector3.MoveTowards(transform.position, pathTarget.position, speed * Time.deltaTime);
+
+        if (Vector3.Distance(transform.position, pathTarget.position) <= 0.05f)
         {
             GetNextWaypoint();
         }
@@ -37,33 +61,69 @@ public class Enemy : MonoBehaviour
 
     void GetNextWaypoint()
     {
-        // Si on n'est pas au dernier point, on passe au suivant
         if (wavepointIndex < Waypoints.points.Length - 1)
         {
             wavepointIndex++;
-            target = Waypoints.points[wavepointIndex];
+            pathTarget = Waypoints.points[wavepointIndex];
         }
         else
         {
-            // On est arrivé au bout (Village)
+            // On est arrivé au bout du chemin, on passe en mode Assiègement
             ReachDestination();
         }
     }
 
     void ReachDestination()
     {
-        // Trouver le script du village et lui faire des dégâts
-        GameObject village = GameObject.Find("Village"); // "Village" dans l'inspecteur
+        GameObject village = GameObject.Find("Village");
         if (village != null)
         {
+            villageTransform = village.transform;
             village.GetComponent<VillageStats>().TakeDamage(damageToVillage);
         }
         
-        // L'ennemi disparaît après avoir attaqué
-        GameManager.EnemiesAlive--; // Important pour la victoire
-        Destroy(gameObject);
+        // On change l'état au lieu de détruire l'ennemi
+        isRoaming = true;
+        PickNewRoamTarget();
     }
 
+    // --- ETAT 2 : SE BALADER AUTOUR DU VILLAGE ---
+    void RoamAroundVillage()
+    {
+        if (villageTransform == null) return;
+
+        Vector3 dir = roamTargetPoint - transform.position;
+
+        if (dir != Vector3.zero)
+        {
+            Quaternion lookRotation = Quaternion.LookRotation(dir);
+            transform.rotation = Quaternion.Lerp(transform.rotation, lookRotation, Time.deltaTime * turnSpeed);
+        }
+
+        // On peut réduire un peu la vitesse quand ils se baladent si on veut (ex: speed * 0.5f)
+        transform.position = Vector3.MoveTowards(transform.position, roamTargetPoint, (speed * 0.5f) * Time.deltaTime);
+
+        // S'il est arrivé à son point aléatoire, on en choisit un nouveau
+        if (Vector3.Distance(transform.position, roamTargetPoint) <= 0.1f)
+        {
+            PickNewRoamTarget();
+        }
+    }
+
+    void PickNewRoamTarget()
+    {
+        // Crée un point aléatoire dans un cercle 2D (x, y)
+        Vector2 randomPoint = Random.insideUnitCircle * roamRadius;
+        
+        // On applique ce point autour de la position du village, en gardant la hauteur (Y) de l'ennemi
+        roamTargetPoint = new Vector3(
+            villageTransform.position.x + randomPoint.x, 
+            transform.position.y, 
+            villageTransform.position.z + randomPoint.y
+        );
+    }
+
+    // --- GESTION DE LA VIE ---
     public void TakeDamage(float amount)
     {
         health -= amount;
@@ -74,7 +134,17 @@ public class Enemy : MonoBehaviour
 
     void Die()
     {
-        GameManager.EnemiesAlive--; // Décrémente le compteur d'ennemis vivants
+        GameManager.EnemiesAlive--;
         Destroy(gameObject);
+    }
+
+    // --- VISUALISATION DU RADIUS DANS L'EDITEUR ---
+    void OnDrawGizmosSelected()
+    {
+        if (isRoaming && villageTransform != null)
+        {
+            Gizmos.color = Color.blue;
+            Gizmos.DrawWireSphere(villageTransform.position, roamRadius);
+        }
     }
 }
