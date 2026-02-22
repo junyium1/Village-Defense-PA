@@ -10,7 +10,7 @@ public class Enemy : MonoBehaviour
     public int damageToVillage = 1;
 
     [Header("Assiègement du Village")]
-    public float roamRadius = 4f; // La taille de la zone où ils se baladent
+    public float roamRadius = 20f; // La taille de la zone où ils se baladent
     private bool isRoaming = false; // Permet de savoir dans quel état est l'ennemi
     private Vector3 roamTargetPoint; // Le point aléatoire où il va
     private Transform villageTransform;
@@ -40,7 +40,7 @@ public class Enemy : MonoBehaviour
         }
     }
 
-    // --- ETAT 1 : SUIVRE LE CHEMIN ---
+    
     void MoveAlongPath()
     {
         Vector3 dir = pathTarget.position - transform.position;
@@ -68,7 +68,7 @@ public class Enemy : MonoBehaviour
         }
         else
         {
-            // On est arrivé au bout du chemin, on passe en mode Assiègement
+            
             ReachDestination();
         }
     }
@@ -87,7 +87,7 @@ public class Enemy : MonoBehaviour
         PickNewRoamTarget();
     }
 
-    // --- ETAT 2 : SE BALADER AUTOUR DU VILLAGE ---
+    
     void RoamAroundVillage()
     {
         if (villageTransform == null) return;
@@ -123,7 +123,7 @@ public class Enemy : MonoBehaviour
         );
     }
 
-    // --- GESTION DE LA VIE ---
+    
     public void TakeDamage(float amount)
     {
         health -= amount;
@@ -137,14 +137,5 @@ public class Enemy : MonoBehaviour
         GameManager.EnemiesAlive--;
         Destroy(gameObject);
     }
-
-    // --- VISUALISATION DU RADIUS DANS L'EDITEUR ---
-    void OnDrawGizmosSelected()
-    {
-        if (isRoaming && villageTransform != null)
-        {
-            Gizmos.color = Color.blue;
-            Gizmos.DrawWireSphere(villageTransform.position, roamRadius);
-        }
-    }
+    
 }
