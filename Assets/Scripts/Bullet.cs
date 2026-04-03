@@ -17,7 +17,6 @@ public class Bullet : MonoBehaviour
 
     void HitTarget()
     {
-        Debug.Log("cc"); 
         GameObject particleIns = (GameObject)Instantiate(impactEffect, transform.position, transform.rotation);
         Destroy(particleIns, 2f);
         Destroy(gameObject);
