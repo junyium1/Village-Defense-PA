@@ -15,10 +15,11 @@ namespace Game
         [SerializeField] Transform       spawnPoint;
         [SerializeField] float           timeBetweenWaves = 5f;
         [SerializeField] TextMeshProUGUI waveTimerText;
+        [SerializeField] int             totalWaves = 1; // testing
 
         [Header("Runtime")]
         public int   currentWave    = 0;
-        public int   playerLives    = 20;
+        public int   playerLives    = 2;
         public bool  waveInProgress = false;
 
         float _countdown;
@@ -37,7 +38,7 @@ namespace Game
 
         void Update()
         {
-            if (waveInProgress) return;
+            if (waveInProgress || currentWave >= totalWaves) return;
 
             _countdown -= Time.deltaTime;
 
@@ -59,14 +60,19 @@ namespace Game
                 yield return new WaitForSeconds(0.5f);
             }
 
-            // // we can use this if we want each wave to be separate - mayeb for a boss mechanic?
-            // yield return new WaitUntil(() => 
-            //     FindObjectsByType<Unit>(FindObjectsSortMode.None)
-            //         .Length == 0
-            // );
-
             waveInProgress = false;
-            _countdown = timeBetweenWaves;
+            if (currentWave >= totalWaves)
+            {
+                // wait for remaining enemies to die then trigger victory
+                yield return new WaitUntil(() =>
+                    FindObjectsByType<Unit>(FindObjectsSortMode.None).Length == 0
+                );
+                GameManager.Instance.OnGameOver(true);
+            }
+            else
+            {
+                _countdown = timeBetweenWaves;
+            }
         }
 
         void SpawnEnemy()
@@ -83,8 +89,8 @@ namespace Game
 
         void OnEnemyDied(Unit u)
         {
-            // hook in score, currency, etc. here
-            Debug.Log($"{u.data.unitName} eliminated.");
+            // debug purposes, can be useful later
+            print($"{u.data.unitName} eliminated.");
         }
 
         public void OnEnemyReachedEnd()
@@ -93,7 +99,7 @@ namespace Game
             print($"Enemy reached end! Lives remaining: {playerLives}");
 
             if (playerLives <= 0)
-                GameManager.Instance.OnGameOver();
+                GameManager.Instance.OnGameOver(false);
         }
     }
 }

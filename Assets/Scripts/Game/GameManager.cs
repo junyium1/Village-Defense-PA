@@ -1,3 +1,4 @@
+using Menus;
 using UnityEngine;
 
 namespace Game
@@ -5,6 +6,7 @@ namespace Game
     // TODO implement more phases (story / cutscenes pre-boss fights if any
     public enum GamePhase { Placement, Combat, Pause }
     
+    // TODO implement save progress when we have multiple levels
     public class GameManager : MonoBehaviour
     {
         public static GameManager Instance { get; private set; }
@@ -12,7 +14,7 @@ namespace Game
         public CombatManager combatManager;
         public GamePhase currentPhase;
         private GamePhase _previousPhase; // to store what phase to go back to
-        
+        [SerializeField] LevelEndMenuManager levelEndMenuManager;
         void Awake()
         {
             if (Instance != null && Instance != this) { Destroy(this); return; }
@@ -62,11 +64,10 @@ namespace Game
             Time.timeScale = 1f;
         }
         
-        // TODO implement game over screen later
-        public void OnGameOver()
+        public void OnGameOver(bool won)
         {
-            print(">>>>>> Game Over!");
-            // load game over screen, etc.
+            levelEndMenuManager.Show(won);
+            Time.timeScale = 0f;
         }
     }
 }
