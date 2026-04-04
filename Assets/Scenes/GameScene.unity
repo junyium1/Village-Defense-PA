@@ -27030,7 +27030,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: befc291af1fddc64b9f9ff54499031bb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CameraSystem
-  cinemachineCamera: {fileID: 0}
+  cinemachineCamera: {fileID: 152072570}
   moveSpeed: 90
   rotateSpeed: 90
   mouseRotateSpeed: 0.2
