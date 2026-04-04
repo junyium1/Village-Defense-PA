@@ -199,7 +199,7 @@ public partial class @CameraInput: IInputActionCollection2, IDisposable
                     ""isPartOfComposite"": false
                 },
                 {
-                    ""name"": ""negative"",
+                    ""name"": ""Positive"",
                     ""id"": ""b89f1125-0e4f-4b63-bc81-2d3aa5510418"",
                     ""path"": ""<Keyboard>/q"",
                     ""interactions"": """",
@@ -210,7 +210,7 @@ public partial class @CameraInput: IInputActionCollection2, IDisposable
                     ""isPartOfComposite"": true
                 },
                 {
-                    ""name"": ""positive"",
+                    ""name"": ""Negative"",
                     ""id"": ""16f4325c-bfb9-4477-8814-c7bcda0df720"",
                     ""path"": ""<Keyboard>/e"",
                     ""interactions"": """",

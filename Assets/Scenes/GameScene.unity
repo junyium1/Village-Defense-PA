@@ -8733,7 +8733,7 @@ Transform:
   m_GameObject: {fileID: 152072568}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0.7071068, z: 0, w: 0.7071068}
-  m_LocalPosition: {x: 1.3, y: 13.2, z: -27.8}
+  m_LocalPosition: {x: 1.3, y: 18.7, z: -27.9}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -8757,7 +8757,7 @@ MonoBehaviour:
     AngularDampingMode: 0
     RotationDamping: {x: 1, y: 1, z: 1}
     QuaternionDamping: 1
-  FollowOffset: {x: 0, y: 12.2, z: -27.8}
+  FollowOffset: {x: 0, y: 17.7, z: -27.9}
 --- !u!114 &152072573
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -19263,7 +19263,7 @@ Transform:
   m_GameObject: {fileID: 330585543}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0.7071068, z: 0, w: 0.7071068}
-  m_LocalPosition: {x: 1.3, y: 13.2, z: -27.8}
+  m_LocalPosition: {x: 1.3, y: 18.7, z: -27.9}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -27030,7 +27030,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: befc291af1fddc64b9f9ff54499031bb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CameraSystem
-  moveSpeed: 50
+  moveSpeed: 90
+  rotateSpeed: 90
+  mouseRotateSpeed: 0.2
+  zoomSpeed: 50
 --- !u!1 &470879292
 GameObject:
   m_ObjectHideFlags: 0
@@ -92727,7 +92730,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 53.4622, y: -49.2806}
+  m_AnchoredPosition: {x: 53.46216, y: -49.28058}
   m_SizeDelta: {x: 106.9246, y: 98.5611}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1744754482
