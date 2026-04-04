@@ -7,6 +7,7 @@ namespace Game
     
     public class GameManager : MonoBehaviour
     {
+        public static GameManager Instance { get; private set; }
         public PlacementManager placementManager;
         public CombatManager combatManager;
         public GamePhase currentPhase;
@@ -14,10 +15,14 @@ namespace Game
         
         void Awake()
         {
+            if (Instance != null && Instance != this) { Destroy(this); return; }
+            Instance = this;
+
             placementManager = GetComponent<PlacementManager>();
-            combatManager = GetComponent<CombatManager>();
+            combatManager    = GetComponent<CombatManager>();
         }
         
+        // TODO by default start at placement, change later when include story etc
         void Start() => EnterPlacement();
 
         public void EnterPlacement()
@@ -55,6 +60,13 @@ namespace Game
             combatManager.enabled = (currentPhase == GamePhase.Combat);
 
             Time.timeScale = 1f;
+        }
+        
+        // TODO implement game over screen later
+        public void OnGameOver()
+        {
+            print(">>>>>> Game Over!");
+            // load game over screen, etc.
         }
     }
 }

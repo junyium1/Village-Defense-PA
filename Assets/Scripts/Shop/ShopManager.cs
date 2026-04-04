@@ -16,9 +16,7 @@ namespace Shop
         
         private void Update()
         {
-            // TODO use this instead when phases are correctly implemented
-            // if (gameManager.currentPhase != GamePhase.Placement)
-            if (gameManager.currentPhase == GamePhase.Pause)
+            if (gameManager.currentPhase != GamePhase.Placement)
             {
                 CloseShopMenu();
                 return;

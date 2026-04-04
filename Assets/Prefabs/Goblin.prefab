@@ -13,8 +13,9 @@ GameObject:
   - component: {fileID: 3256198591747878637}
   - component: {fileID: 7228821521236968569}
   - component: {fileID: -2095427852719627993}
+  - component: {fileID: 412069977943304122}
   m_Layer: 0
-  m_Name: Enemy
+  m_Name: Goblin
   m_TagString: Enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -122,7 +123,20 @@ MonoBehaviour:
   m_GameObject: {fileID: 4932430296917235706}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: eb8aa90ffe7381a40a07db7b952f23e1, type: 3}
+  m_Script: {fileID: 11500000, guid: 29e32c499d4e44a89083427d629f8af2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: '::'
-  speed: 10
+  data: {fileID: 11400000, guid: bed4b9c448a6ae946bd9659ac8fd7a91, type: 2}
+  currentHp: 0
+--- !u!114 &412069977943304122
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4932430296917235706}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2ec21f23fedb40ae9bdfac22f76200af, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Game.WaypointMover
