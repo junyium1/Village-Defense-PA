@@ -78,13 +78,10 @@ namespace Game
         void SpawnEnemy()
         {
             GameObject go = Instantiate(enemyPrefab, spawnPoint.position, spawnPoint.rotation);
-
             Unit unit = go.GetComponent<Unit>();
-            if (unit != null)
-            {
-                unit.data = enemyData;
-                unit.OnDeath += OnEnemyDied;
-            }
+            Health hp = go.GetComponent<Health>();
+            if (unit != null) unit.data = enemyData;
+            if (hp != null) hp.OnDeath += _ => OnEnemyDied(unit);
         }
 
         void OnEnemyDied(Unit u)

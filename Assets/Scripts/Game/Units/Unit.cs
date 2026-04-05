@@ -14,22 +14,10 @@ namespace Game.Units
     
     public class Unit: MonoBehaviour {
         public UnitData data;
-        [HideInInspector] public float currentHp;
-
-        public event System.Action<Unit> OnDeath;
-
-        void Start() => currentHp = data.maxHp;
-
-        public void TakeDamage(float amount)
-        {
-            currentHp -= amount;
-            if (currentHp <= 0) Die();
-        }
-
-        void Die()
-        {
-            OnDeath?.Invoke(this);
-            Destroy(gameObject);
-        }
+        public Health   health;
+        
+        void Awake() => health = GetComponent<Health>();
+        
+        public Faction GetFaction() => data.faction;
     }
 }
