@@ -15,9 +15,9 @@ MonoBehaviour:
   unitName: Goblin
   faction: 0
   maxHp: 10
-  damage: 1
+  damage: 2
   moveSpeed: 50
   attackRange: 10
-  attackRate: 0
+  attackRate: 10
   bulletPrefab: {fileID: 0}
   bulletSpeed: 0
