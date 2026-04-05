@@ -38217,6 +38217,52 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 716061158}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!1 &716711901
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 716711903}
+  - component: {fileID: 716711902}
+  m_Layer: 0
+  m_Name: Player
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &716711902
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 716711901}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 24766e59600d459094d594b1d8330c2f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Player
+  gold: 67
+  crystals: 0
+--- !u!4 &716711903
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 716711901}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 128.408, y: 0.5, z: -34.33005}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &718255551
 GameObject:
   m_ObjectHideFlags: 0
@@ -69160,12 +69206,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 224bad9eaba2409086d63dcd4b1fae8b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Game.CombatManager
+  levelData: {fileID: 11400000, guid: 827acac38560065449184c3c1aad2147, type: 2}
   enemyPrefab: {fileID: 4932430296917235706, guid: b36765a5081f85c4db151242729f22d4, type: 3}
   enemyData: {fileID: 11400000, guid: bed4b9c448a6ae946bd9659ac8fd7a91, type: 2}
   spawnPoint: {fileID: 542873230}
-  timeBetweenWaves: 5
   waveTimerText: {fileID: 1744754482}
-  totalWaves: 1
   currentWave: 0
   playerLives: 2
   waveInProgress: 0
@@ -112456,3 +112501,4 @@ SceneRoots:
   - {fileID: 681569332}
   - {fileID: 1316117954}
   - {fileID: 4645202425635452437}
+  - {fileID: 716711903}

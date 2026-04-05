@@ -12,9 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1a3f8b54078341aebb63a3a7b23e39df, type: 3}
   m_Name: Level1Data
   m_EditorClassIdentifier: Assembly-CSharp::Game.LevelData
-  levelName: 
-  maxLives: 0
-  totalWaves: 0
-  timeBetweenWaves: 0
-  goldReward: 0
-  maxCrystalsReward: 0
+  levelName: THE MEADOWSsssss
+  maxLives: 2
+  totalWaves: 1
+  timeBetweenWaves: 5
+  goldReward: 100
+  maxCrystalsReward: 10
