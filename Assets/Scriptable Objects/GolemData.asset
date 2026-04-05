@@ -15,6 +15,9 @@ MonoBehaviour:
   unitName: Golem
   faction: 1
   maxHp: 100
-  damage: 50
+  damage: 500
   moveSpeed: 10
-  attackRange: 10
+  attackRange: 5
+  attackRate: 50
+  bulletPrefab: {fileID: 0}
+  bulletSpeed: 0

@@ -6,18 +6,24 @@ namespace Game.Units
 
     // dynamic ish creation, specify values in inspector
     [CreateAssetMenu(menuName = "Units/UnitData")]
-    public class UnitData : ScriptableObject {
+    public class UnitData : ScriptableObject
+    {
         public string unitName;
         public Faction faction;
-        public float maxHp, damage, moveSpeed, attackRange;
+        public float maxHp, damage, moveSpeed, attackRange, attackRate;
+
+        // ranged units specific
+        public GameObject bulletPrefab;
+        public float bulletSpeed;
     }
-    
-    public class Unit: MonoBehaviour {
+
+    public class Unit : MonoBehaviour
+    {
         public UnitData data;
-        public Health   health;
-        
+        public Health health;
+
         void Awake() => health = GetComponent<Health>();
-        
+
         public Faction GetFaction() => data.faction;
     }
 }
