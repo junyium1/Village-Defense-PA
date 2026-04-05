@@ -15,6 +15,6 @@ MonoBehaviour:
   displayName: Portal
   cost: 20
   maxHp: 1000
-  prefab: {fileID: 0}
+  prefab: {fileID: 6282059400665795401, guid: 313750255fb166d43874a3073211fbe1, type: 3}
   capacity: 10
   triggerRadius: 5
