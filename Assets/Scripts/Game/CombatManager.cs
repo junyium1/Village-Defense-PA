@@ -9,36 +9,43 @@ namespace Game
     {
         public static CombatManager Instance { get; private set; }
 
-        [Header("Wave Settings")]
-        [SerializeField] GameObject      enemyPrefab;
-        [SerializeField] UnitData        enemyData;
-        [SerializeField] Transform       spawnPoint;
-        [SerializeField] float           timeBetweenWaves = 5f;
+        [Header("Level")] [SerializeField] LevelData levelData;
+
+        [Header("Wave Settings")] [SerializeField]
+        GameObject enemyPrefab;
+
+        [SerializeField] UnitData enemyData;
+        [SerializeField] Transform spawnPoint;
         [SerializeField] TextMeshProUGUI waveTimerText;
-        [SerializeField] int             totalWaves = 1; // testing
 
         [Header("Runtime")]
-        public int   currentWave    = 0;
-        public int   playerLives    = 2;
-        public bool  waveInProgress = false;
+        public int currentWave = 0;
+        public int playerLives = 2;
+        public bool waveInProgress = false;
 
         float _countdown;
 
+        // -------------- singleton --------------
         void Awake()
         {
-            // simple singleton — only one CombatManager in the scene
-            if (Instance != null && Instance != this) { Destroy(this); return; }
+            if (Instance != null && Instance != this)
+            {
+                Destroy(this);
+                return;
+            }
+
             Instance = this;
         }
 
         void OnEnable()
         {
-            _countdown = timeBetweenWaves;
+            playerLives = levelData.maxLives;
+            _countdown = levelData.timeBetweenWaves;
         }
 
         void Update()
         {
-            if (waveInProgress || currentWave >= totalWaves) return;
+            if (waveInProgress || currentWave >= levelData.totalWaves) return;
 
             _countdown -= Time.deltaTime;
 
@@ -61,17 +68,23 @@ namespace Game
             }
 
             waveInProgress = false;
-            if (currentWave >= totalWaves)
+            if (currentWave >= levelData.totalWaves)
             {
                 // wait for remaining enemies to die then trigger victory
                 yield return new WaitUntil(() =>
                     FindObjectsByType<Unit>(FindObjectsSortMode.None).Length == 0
                 );
+                //TODO TEST!!!
+                float integrityRatio = (float)playerLives / levelData.maxLives;
+                int crystalsEarned = Mathf.RoundToInt(integrityRatio * levelData.maxCrystalsReward);
+                Player.Instance.EarnCrystals(crystalsEarned);
+                Player.Instance.EarnGold(levelData.goldReward);
+
                 GameManager.Instance.OnGameOver(true);
             }
             else
             {
-                _countdown = timeBetweenWaves;
+                _countdown = levelData.timeBetweenWaves;
             }
         }
 
