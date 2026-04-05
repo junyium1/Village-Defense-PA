@@ -1,6 +1,5 @@
 using UnityEngine;
 using Unity.Cinemachine;
-
 public class CameraSystem : MonoBehaviour
 {
     private CameraInput cameraInput;
@@ -9,14 +8,19 @@ public class CameraSystem : MonoBehaviour
     [SerializeField] private float rotateSpeed = 90f;
     [SerializeField] private float mouseRotateSpeed = 0.2f;
     [SerializeField] private float zoomSpeed = 15f;
+    [SerializeField] private float topDownViewHeight = 90f;
 
     private bool enableEdgeScrolling = true;
     private bool enableMouseRotation = false;
+    private bool isTopDownView = false;
+    
+    private Vector3 savedPosition;
+    private Vector3 savedRotation;
     private Vector2 lastMousePositionRotation;
     
     private float targetFieldOfView = 50;
-    [SerializeField] float targetFieldOfViewMax = 60;
-    [SerializeField] float targetFieldOfViewMin = 10;
+    [SerializeField] private float targetFieldOfViewMax = 60;
+    [SerializeField] private float targetFieldOfViewMin = 10;
     
     
     private void Awake()
@@ -36,26 +40,58 @@ public class CameraSystem : MonoBehaviour
     
     private void Update()
     {
+        HandleTopDownView();
         HandleCameraMovement();
         HandleCameraRotation();
         HandleCameraZoom();
     }
 
+    private void HandleTopDownView()
+    {
+        if (cameraInput.Camera.ToggleTopDown.WasPressedThisFrame())
+        {
+            isTopDownView = !isTopDownView;
+
+            if (isTopDownView)
+            {
+                savedPosition = transform.position;
+                savedRotation = transform.eulerAngles;
+            }
+            else
+            {
+                transform.position = savedPosition;
+                transform.eulerAngles = savedRotation;
+            }
+        }
+    }
+
     private void HandleCameraMovement()
     {
+        if (isTopDownView)
+        {
+            transform.eulerAngles = new Vector3(90f, 0f, 0f);
+            Vector3 position = transform.position;
+            position.y = topDownViewHeight;
+            transform.position = position;
+        }
+        
         Vector2 inputValue = cameraInput.Camera.Movement.ReadValue<Vector2>();
         Vector3 inputDirection = new  Vector3(inputValue.x, 0, inputValue.y);
         
-        Vector3 moveDirection = transform.forward * inputDirection.z + transform.right * inputDirection.x;
+        Vector3 moveDirection = isTopDownView 
+            ? transform.up * inputDirection.z + transform.right * inputDirection.x
+            : transform.forward * inputDirection.z + transform.right * inputDirection.x;
         transform.position += moveDirection * moveSpeed * Time.deltaTime;
         
         if (enableEdgeScrolling)
         {
             Vector3 edgeDirection = ApplyEdgeScrolling(Vector3.zero);
             
-            Vector3 forward = new Vector3(transform.forward.x, 0, transform.forward.z).normalized;
+            Vector3 forward = isTopDownView 
+                ? new Vector3(transform.up.x, 0, transform.up.z).normalized
+                : new Vector3(transform.forward.x, 0, transform.forward.z).normalized;
             Vector3 right = new Vector3(transform.right.x, 0, transform.right.z).normalized;
-            transform.position += (forward * edgeDirection.z + right * edgeDirection.x) * moveSpeed * Time.deltaTime;inputDirection = ApplyEdgeScrolling(inputDirection);
+            transform.position += (forward * edgeDirection.z + right * edgeDirection.x) * moveSpeed * Time.deltaTime;
         }
     }
 
@@ -84,6 +120,8 @@ public class CameraSystem : MonoBehaviour
 
     private void HandleCameraRotation()
     {
+        if (isTopDownView) return;
+        
         float rotateDirection = cameraInput.Camera.Rotation.ReadValue<float>();
         transform.eulerAngles += new Vector3(0, rotateDirection * rotateSpeed * Time.deltaTime, 0);
 

@@ -118,6 +118,15 @@ public partial class @CameraInput: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": true
+                },
+                {
+                    ""name"": ""ToggleTopDown"",
+                    ""type"": ""Button"",
+                    ""id"": ""ec82f079-6a8a-4183-9cca-cd552dc33c1c"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -219,6 +228,17 @@ public partial class @CameraInput: IInputActionCollection2, IDisposable
                     ""action"": ""Rotation"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""7e18771c-7b23-4eec-83ba-7589977df0ef"",
+                    ""path"": ""<Keyboard>/t"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""ToggleTopDown"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -230,6 +250,7 @@ public partial class @CameraInput: IInputActionCollection2, IDisposable
         m_Camera_Movement = m_Camera.FindAction("Movement", throwIfNotFound: true);
         m_Camera_Rotation = m_Camera.FindAction("Rotation", throwIfNotFound: true);
         m_Camera_Zoom = m_Camera.FindAction("Zoom", throwIfNotFound: true);
+        m_Camera_ToggleTopDown = m_Camera.FindAction("ToggleTopDown", throwIfNotFound: true);
     }
 
     ~@CameraInput()
@@ -313,6 +334,7 @@ public partial class @CameraInput: IInputActionCollection2, IDisposable
     private readonly InputAction m_Camera_Movement;
     private readonly InputAction m_Camera_Rotation;
     private readonly InputAction m_Camera_Zoom;
+    private readonly InputAction m_Camera_ToggleTopDown;
     /// <summary>
     /// Provides access to input actions defined in input action map "Camera".
     /// </summary>
@@ -336,6 +358,10 @@ public partial class @CameraInput: IInputActionCollection2, IDisposable
         /// Provides access to the underlying input action "Camera/Zoom".
         /// </summary>
         public InputAction @Zoom => m_Wrapper.m_Camera_Zoom;
+        /// <summary>
+        /// Provides access to the underlying input action "Camera/ToggleTopDown".
+        /// </summary>
+        public InputAction @ToggleTopDown => m_Wrapper.m_Camera_ToggleTopDown;
         /// <summary>
         /// Provides access to the underlying input action map instance.
         /// </summary>
@@ -371,6 +397,9 @@ public partial class @CameraInput: IInputActionCollection2, IDisposable
             @Zoom.started += instance.OnZoom;
             @Zoom.performed += instance.OnZoom;
             @Zoom.canceled += instance.OnZoom;
+            @ToggleTopDown.started += instance.OnToggleTopDown;
+            @ToggleTopDown.performed += instance.OnToggleTopDown;
+            @ToggleTopDown.canceled += instance.OnToggleTopDown;
         }
 
         /// <summary>
@@ -391,6 +420,9 @@ public partial class @CameraInput: IInputActionCollection2, IDisposable
             @Zoom.started -= instance.OnZoom;
             @Zoom.performed -= instance.OnZoom;
             @Zoom.canceled -= instance.OnZoom;
+            @ToggleTopDown.started -= instance.OnToggleTopDown;
+            @ToggleTopDown.performed -= instance.OnToggleTopDown;
+            @ToggleTopDown.canceled -= instance.OnToggleTopDown;
         }
 
         /// <summary>
@@ -452,5 +484,12 @@ public partial class @CameraInput: IInputActionCollection2, IDisposable
         /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
         /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
         void OnZoom(InputAction.CallbackContext context);
+        /// <summary>
+        /// Method invoked when associated input action "ToggleTopDown" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnToggleTopDown(InputAction.CallbackContext context);
     }
 }
