@@ -38919,17 +38919,6 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 728568254}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
---- !u!114 &730290302 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 6000364954135906983, guid: cf4d4cd5b663f5044868bcd7d9035cd4, type: 3}
-  m_PrefabInstance: {fileID: 4645202425635452437}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5ad1ffcccc4e410aa9a5dc67df645add, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Menus.LevelEndMenuManager
 --- !u!1 &731998945
 GameObject:
   m_ObjectHideFlags: 0
@@ -68970,7 +68959,7 @@ MonoBehaviour:
   spawnPoint: {fileID: 542873230}
   timeBetweenWaves: 5
   waveTimerText: {fileID: 1744754482}
-  totalWaves: 2
+  totalWaves: 1
   currentWave: 0
   playerLives: 2
   waveInProgress: 0
@@ -69001,7 +68990,7 @@ MonoBehaviour:
   placementManager: {fileID: 1294040694}
   combatManager: {fileID: 1294040693}
   currentPhase: 1
-  levelEndMenuManager: {fileID: 730290302}
+  levelEndMenuManager: {fileID: 0}
 --- !u!4 &1294040696
 Transform:
   m_ObjectHideFlags: 0
