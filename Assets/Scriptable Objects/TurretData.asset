@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0911632821174403bfef0383f95e2745, type: 3}
+  m_Name: TurretData
+  m_EditorClassIdentifier: Assembly-CSharp::Game.Defenses.TurretData
+  displayName: Turret
+  cost: 3
+  maxHp: 100
+  prefab: {fileID: 5221539773677575337, guid: 8286906943ba78b49b2ac84b3d94570e, type: 3}
+  range: 10
+  fireRate: 1
+  damage: 100
+  bulletSpeed: 60
+  statusEffect: 0
+  statusDuration: 0
+  bulletPrefab: {fileID: 9044489008476830765, guid: a29c677424da29144b493378f67a8bec, type: 3}

@@ -13,6 +13,13 @@ namespace Game.Defenses
         Transform _target;
         float _fireCountdown;
 
+        void Awake()
+        {
+            Health hp = GetComponent<Health>();
+            hp.maxHp = data.maxHp;
+            hp.Init();
+        }
+
         void Start()
         {
             GetComponent<Health>().maxHp = data.maxHp;
@@ -47,8 +54,7 @@ namespace Game.Defenses
             // rotate toward target
             Vector3 dir = _target.position - transform.position;
             Quaternion lookRot = Quaternion.LookRotation(dir);
-            rotatePart.rotation = Quaternion.Euler(0f, lookRot.eulerAngles.y, 0f);
-
+            rotatePart.rotation = Quaternion.Euler(lookRot.eulerAngles.x, lookRot.eulerAngles.y, 0f);
             // fire
             _fireCountdown -= Time.deltaTime;
             if (_fireCountdown <= 0f)

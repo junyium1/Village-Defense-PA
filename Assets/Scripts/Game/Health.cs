@@ -11,6 +11,8 @@ namespace Game
         public event System.Action<Health> OnDeath;
         public event System.Action<float, float> OnDamaged; // current, max — for UI
 
+        public void Init() => CurrentHp = maxHp;
+
         void Awake() => CurrentHp = maxHp;
 
         public void TakeDamage(float amount)
@@ -21,6 +23,7 @@ namespace Game
             if (CurrentHp <= 0) Die();
         }
 
+        // not used yet but could be cool
         public void Heal(float amount)
         {
             CurrentHp = Mathf.Min(CurrentHp + amount, maxHp);
