@@ -10,7 +10,7 @@ public class CameraSystem : MonoBehaviour
     [SerializeField] private float zoomSpeed = 15f;
     [SerializeField] private float topDownViewHeight = 90f;
 
-    private bool enableEdgeScrolling = true;
+    [SerializeField] bool enableEdgeScrolling = true;
     private bool enableMouseRotation = false;
     private bool isTopDownView = false;
     

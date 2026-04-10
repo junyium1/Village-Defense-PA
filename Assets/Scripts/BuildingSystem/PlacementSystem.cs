@@ -1,10 +1,8 @@
-using System;
-using Unity.Multiplayer.Center.Common;
 using UnityEngine;
+using System.Collections.Generic;
 
 public class PlacementSystem : MonoBehaviour
 {
-    [SerializeField] private GameObject mouseIndicator;
     [SerializeField] private GameObject cellIndicator;
     [SerializeField] private InputManager inputManager;
     [SerializeField] private Grid grid;
@@ -12,11 +10,21 @@ public class PlacementSystem : MonoBehaviour
     [SerializeField] private BuildingsDatabaseSO database;
     private int selectedBuildingIndex = -1;
     
+    [SerializeField] private Vector2Int gridSize = new Vector2Int(20, 20);
     [SerializeField] private GameObject gridVisualization;
+    private GridData floorData, buildingsData;
+    
+    private Renderer[] previewRenderer;
+    private List<GameObject> placedGameObjects = new();
 
+    [SerializeField] private AudioSource placementSound;
+    
     private void Start()
     {
         StopPlacement();
+        floorData = new();
+        buildingsData = new();
+        previewRenderer = cellIndicator.GetComponentsInChildren<Renderer>();
     }
 
     public void StartPlacement(int ID)
@@ -35,6 +43,19 @@ public class PlacementSystem : MonoBehaviour
         inputManager.OnExit += StopPlacement;
     }
 
+    private bool IsBuildingWithinGrid(Vector3Int gridPosition, Vector2Int buildingSize)
+    {
+        if (gridPosition.x >= -gridSize.x / 2 &&
+            gridPosition.x + buildingSize.x <= gridSize.x / 2 &&
+            gridPosition.z >= -gridSize.y / 2 &&
+            gridPosition.z + buildingSize.y <= gridSize.y / 2)
+        {
+            return true;
+        }
+
+        return false;
+    }
+
     private void PlaceStructure()
     {
         if (inputManager.IsPointerOverUIObject())
@@ -44,9 +65,39 @@ public class PlacementSystem : MonoBehaviour
         
         Vector3 mousePosition = inputManager.GetSelectedMapPosition();
         Vector3Int gridPosition = grid.WorldToCell(mousePosition);
-        GameObject newBuilding = Instantiate(database.buildingsData[selectedBuildingIndex].Prefab);
+
+        Vector2Int buildingSize = database.buildingsData[selectedBuildingIndex].Size;
         
-        newBuilding.transform.position = grid.CellToWorld(gridPosition);
+        bool validPlacement = CheckPlacementValidity(gridPosition, selectedBuildingIndex) && 
+                              IsBuildingWithinGrid(gridPosition, buildingSize);
+
+        if (validPlacement)
+        {
+            placementSound.Play();
+            GameObject newBuilding = Instantiate(database.buildingsData[selectedBuildingIndex].Prefab);
+            newBuilding.transform.position = grid.CellToWorld(gridPosition);
+            placedGameObjects.Add(newBuilding);
+            GridData selectedData = database.buildingsData[selectedBuildingIndex].ID == 0 ?
+                floorData :
+                buildingsData;
+            selectedData.AddBuilding(gridPosition, 
+                database.buildingsData[selectedBuildingIndex].Size, 
+                database.buildingsData[selectedBuildingIndex].ID,
+                placedGameObjects.Count -1);
+        }
+        else
+        {
+            return;
+        }
+    }
+
+    private bool CheckPlacementValidity(Vector3Int gridPosition, int selectedBuildingIndex)
+    {
+        GridData selectedData = database.buildingsData[selectedBuildingIndex].ID == 0 ?
+            floorData :
+            buildingsData;
+        
+        return selectedData.CanPlaceBuilding(gridPosition, database.buildingsData[selectedBuildingIndex].Size);
     }
     
     private void StopPlacement()
@@ -67,8 +118,26 @@ public class PlacementSystem : MonoBehaviour
         
         Vector3 mousePosition = inputManager.GetSelectedMapPosition();
         Vector3Int gridPosition = grid.WorldToCell(mousePosition);
-        mouseIndicator.transform.position = mousePosition;
+        Vector2Int buildingSize = database.buildingsData[selectedBuildingIndex].Size;
+
+        bool validPlacement = CheckPlacementValidity(gridPosition, selectedBuildingIndex) && 
+                              IsBuildingWithinGrid(gridPosition, buildingSize);
         
+
+        if (validPlacement == false)
+        {
+            foreach (Renderer r in previewRenderer)
+            {
+                r.material.color = Color.red;
+            }
+        }
+        else
+        {
+            foreach (Renderer r in previewRenderer)
+            {
+                r.material.color = Color.white;
+            }
+        }
         cellIndicator.transform.position = grid.CellToWorld(gridPosition);
     }
 }
