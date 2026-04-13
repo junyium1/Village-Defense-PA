@@ -27036,6 +27036,7 @@ MonoBehaviour:
   mouseRotateSpeed: 0.2
   zoomSpeed: 50
   topDownViewHeight: 90
+  enableEdgeScrolling: 0
   targetFieldOfViewMax: 60
   targetFieldOfViewMin: 10
 --- !u!1 &470879292
