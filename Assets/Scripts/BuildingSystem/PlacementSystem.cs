@@ -3,7 +3,6 @@ using System.Collections.Generic;
 
 public class PlacementSystem : MonoBehaviour
 {
-    [SerializeField] private GameObject cellIndicator;
     [SerializeField] private InputManager inputManager;
     [SerializeField] private Grid grid;
     
@@ -14,17 +13,19 @@ public class PlacementSystem : MonoBehaviour
     [SerializeField] private GameObject gridVisualization;
     private GridData floorData, buildingsData;
     
-    private Renderer[] previewRenderer;
     private List<GameObject> placedGameObjects = new();
+    
+    [SerializeField] private PreviewSystem preview;
 
     [SerializeField] private AudioSource placementSound;
+
+    private Vector3Int lastDetectedPosition = Vector3Int.zero;
     
     private void Start()
     {
         StopPlacement();
         floorData = new();
         buildingsData = new();
-        previewRenderer = cellIndicator.GetComponentsInChildren<Renderer>();
     }
 
     public void StartPlacement(int ID)
@@ -38,7 +39,9 @@ public class PlacementSystem : MonoBehaviour
         }
         
         gridVisualization.SetActive(true);
-        cellIndicator.SetActive(true);
+        preview.StartShowingPlacementPreview(
+            database.buildingsData[selectedBuildingIndex].Prefab, 
+            database.buildingsData[selectedBuildingIndex].Size);
         inputManager.OnClicked += PlaceStructure;
         inputManager.OnExit += StopPlacement;
     }
@@ -89,6 +92,8 @@ public class PlacementSystem : MonoBehaviour
         {
             return;
         }
+        
+        preview.UpdatePosition(grid.CellToWorld(gridPosition), false);
     }
 
     private bool CheckPlacementValidity(Vector3Int gridPosition, int selectedBuildingIndex)
@@ -104,40 +109,28 @@ public class PlacementSystem : MonoBehaviour
     {
         selectedBuildingIndex = -1;
         gridVisualization.SetActive(false);
-        cellIndicator.SetActive(false);
+        preview.StopShowingPlacementPreview();
         inputManager.OnClicked -= PlaceStructure;
         inputManager.OnExit -= StopPlacement;
+        lastDetectedPosition = Vector3Int.zero;
     }
 
     private void Update()
     {
         if (selectedBuildingIndex < 0)
-        {
             return;
-        }
-        
+    
         Vector3 mousePosition = inputManager.GetSelectedMapPosition();
         Vector3Int gridPosition = grid.WorldToCell(mousePosition);
+
         Vector2Int buildingSize = database.buildingsData[selectedBuildingIndex].Size;
 
-        bool validPlacement = CheckPlacementValidity(gridPosition, selectedBuildingIndex) && 
-                              IsBuildingWithinGrid(gridPosition, buildingSize);
-        
-
-        if (validPlacement == false)
+        if (lastDetectedPosition != gridPosition)
         {
-            foreach (Renderer r in previewRenderer)
-            {
-                r.material.color = Color.red;
-            }
+            bool validPlacement = CheckPlacementValidity(gridPosition, selectedBuildingIndex) && 
+                                  IsBuildingWithinGrid(gridPosition, buildingSize);
+    
+            preview.UpdatePosition(grid.CellToWorld(gridPosition), validPlacement);
         }
-        else
-        {
-            foreach (Renderer r in previewRenderer)
-            {
-                r.material.color = Color.white;
-            }
-        }
-        cellIndicator.transform.position = grid.CellToWorld(gridPosition);
     }
 }
