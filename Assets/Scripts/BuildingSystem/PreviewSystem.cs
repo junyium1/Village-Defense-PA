@@ -57,17 +57,32 @@ public class PreviewSystem : MonoBehaviour
     public void StopShowingPlacementPreview()
     {
         cellIndicator.SetActive(false);
+        if (previewObject != null)
+        {
+            Destroy(previewObject);
+        }
         Destroy(previewObject);
     }
 
     public void UpdatePosition(Vector3 position, bool validity)
     {
-        MovePreview(position);
+        if (previewObject != null)
+        {
+            MovePreview(position);
+            ApplyFeedbackToPreview(validity);
+        }
         MoveCursor(position);
-        ApplyFeedback(validity);
+        ApplyFeedbackToCursor(validity);
     }
 
-    private void ApplyFeedback(bool validity)
+    private void ApplyFeedbackToPreview(bool validity)
+    {
+        Color c = validity ? Color.white : Color.red;
+        c.a = 0.5f;
+        previewMaterialInstance.color = c;
+    }
+    
+    private void ApplyFeedbackToCursor(bool validity)
     {
         Color c = validity ? Color.white : Color.red;
         c.a = 0.5f;
@@ -75,7 +90,6 @@ public class PreviewSystem : MonoBehaviour
         {
             r.material.color = c;
         }
-        previewMaterialInstance.color = c;
     }
     
     private void MoveCursor(Vector3 position)
@@ -87,6 +101,11 @@ public class PreviewSystem : MonoBehaviour
     {
         previewObject.transform.position = new Vector3(position.x, position.y + previewYOffset, position.z);
     }
-
     
+    public void StartShowingRemovePreview()
+    {
+        cellIndicator.SetActive(true);
+        PrepareCursor(Vector2Int.one);
+        ApplyFeedbackToCursor(false);
+    }
 }
