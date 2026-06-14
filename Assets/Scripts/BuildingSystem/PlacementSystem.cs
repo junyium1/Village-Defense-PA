@@ -8,7 +8,7 @@ public class PlacementSystem : MonoBehaviour
     
     [SerializeField] private BuildingsDatabaseSO database;
     
-    [SerializeField] private Vector2Int gridSize = new Vector2Int(20, 20);
+    [SerializeField] private Vector2Int gridSize = new Vector2Int(40, 40);
     [SerializeField] private GameObject gridVisualization;
     private GridData floorData, buildingsData;
     
