@@ -16,7 +16,7 @@ MonoBehaviour:
   cost: 3
   maxHp: 100
   prefab: {fileID: 5221539773677575337, guid: 8286906943ba78b49b2ac84b3d94570e, type: 3}
-  range: 10
+  range: 50
   fireRate: 1
   damage: 100
   bulletSpeed: 60

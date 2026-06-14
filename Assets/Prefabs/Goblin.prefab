@@ -13,8 +13,9 @@ GameObject:
   - component: {fileID: 3256198591747878637}
   - component: {fileID: 7228821521236968569}
   - component: {fileID: -2095427852719627993}
-  - component: {fileID: 412069977943304122}
   - component: {fileID: 72655410433576644}
+  - component: {fileID: 2553804789793695064}
+  - component: {fileID: 701056049686777728}
   m_Layer: 0
   m_Name: Goblin
   m_TagString: Enemy
@@ -129,18 +130,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: '::'
   data: {fileID: 11400000, guid: bed4b9c448a6ae946bd9659ac8fd7a91, type: 2}
   health: {fileID: 0}
---- !u!114 &412069977943304122
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4932430296917235706}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2ec21f23fedb40ae9bdfac22f76200af, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Game.WaypointMover
 --- !u!114 &72655410433576644
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -154,3 +143,37 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Game.Health
   maxHp: 10
+--- !u!195 &2553804789793695064
+NavMeshAgent:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4932430296917235706}
+  m_Enabled: 1
+  m_AgentTypeID: 0
+  m_Radius: 0.5
+  m_Speed: 3.5
+  m_Acceleration: 8
+  avoidancePriority: 50
+  m_AngularSpeed: 120
+  m_StoppingDistance: 0
+  m_AutoTraverseOffMeshLink: 1
+  m_AutoBraking: 1
+  m_AutoRepath: 1
+  m_Height: 1
+  m_BaseOffset: 0.5
+  m_WalkableMask: 4294967295
+  m_ObstacleAvoidanceType: 4
+--- !u!114 &701056049686777728
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4932430296917235706}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e7ba2511e0ff54d4aadae21f8151bc98, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Game.EnemyNavMover
