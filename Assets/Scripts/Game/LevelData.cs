@@ -12,5 +12,6 @@ namespace Game
         public float timeBetweenWaves;
         public int goldReward;
         public int maxCrystalsReward;
+        public bool isBoss;
     }
 }
