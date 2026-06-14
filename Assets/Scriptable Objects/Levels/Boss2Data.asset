@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: Boss2Data
   m_EditorClassIdentifier: Assembly-CSharp::Game.LevelData
   levelName: Demon King
+  levelID: 7
   maxLives: 20
   totalWaves: 5
   timeBetweenWaves: 10

@@ -12,9 +12,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1a3f8b54078341aebb63a3a7b23e39df, type: 3}
   m_Name: Level2Data
   m_EditorClassIdentifier: Assembly-CSharp::Game.LevelData
-  levelName: 
-  maxLives: 0
-  totalWaves: 0
-  timeBetweenWaves: 0
-  goldReward: 0
-  maxCrystalsReward: 0
+  levelName: Rat Attack
+  levelID: 1
+  maxLives: 10
+  totalWaves: 3
+  timeBetweenWaves: 5
+  goldReward: 200
+  maxCrystalsReward: 2
+  isBoss: 0

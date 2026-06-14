@@ -12,10 +12,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1a3f8b54078341aebb63a3a7b23e39df, type: 3}
   m_Name: Boss1Data
   m_EditorClassIdentifier: Assembly-CSharp::Game.LevelData
-  levelName: 
-  maxLives: 0
-  totalWaves: 0
-  timeBetweenWaves: 0
-  goldReward: 0
-  maxCrystalsReward: 0
-  isBoss: 0
+  levelName: Regular Joe
+  levelID: 3
+  maxLives: 20
+  totalWaves: 5
+  timeBetweenWaves: 10
+  goldReward: 500
+  maxCrystalsReward: 10
+  isBoss: 1

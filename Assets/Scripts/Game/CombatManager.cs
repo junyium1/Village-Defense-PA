@@ -8,8 +8,7 @@ namespace Game
     public class CombatManager : MonoBehaviour
     {
         public static CombatManager Instance { get; private set; }
-
-        [Header("Level")] [SerializeField] LevelData levelData;
+        LevelData _levelData;
 
         [Header("Wave Settings")] [SerializeField]
         GameObject enemyPrefab;
@@ -18,8 +17,7 @@ namespace Game
         [SerializeField] Transform spawnPoint;
         [SerializeField] TextMeshProUGUI waveTimerText;
 
-        [Header("Runtime")]
-        public int currentWave = 0;
+        [Header("Runtime")] public int currentWave = 0;
         public int playerLives = 2;
         public bool waveInProgress = false;
 
@@ -37,15 +35,23 @@ namespace Game
             Instance = this;
         }
 
+
         void OnEnable()
         {
-            playerLives = levelData.maxLives;
-            _countdown = levelData.timeBetweenWaves;
+            _levelData = Menus.LevelSelectManager.SelectedLevel;
+            if (!_levelData)
+            {
+                Debug.LogError("No level selected!");
+                return;
+            }
+
+            playerLives = _levelData.maxLives;
+            _countdown = _levelData.timeBetweenWaves;
         }
 
         void Update()
         {
-            if (waveInProgress || currentWave >= levelData.totalWaves) return;
+            if (waveInProgress || currentWave >= _levelData.totalWaves) return;
 
             _countdown -= Time.deltaTime;
 
@@ -68,23 +74,23 @@ namespace Game
             }
 
             waveInProgress = false;
-            if (currentWave >= levelData.totalWaves)
+            if (currentWave >= _levelData.totalWaves)
             {
                 // wait for remaining enemies to die then trigger victory
                 yield return new WaitUntil(() =>
                     FindObjectsByType<Unit>(FindObjectsSortMode.None).Length == 0
                 );
                 //TODO TEST!!!
-                float integrityRatio = (float)playerLives / levelData.maxLives;
-                int crystalsEarned = Mathf.RoundToInt(integrityRatio * levelData.maxCrystalsReward);
+                float integrityRatio = (float)playerLives / _levelData.maxLives;
+                int crystalsEarned = Mathf.RoundToInt(integrityRatio * _levelData.maxCrystalsReward);
                 Player.Instance.EarnCrystals(crystalsEarned);
-                Player.Instance.EarnGold(levelData.goldReward);
+                Player.Instance.EarnGold(_levelData.goldReward);
 
                 GameManager.Instance.OnGameOver(true);
             }
             else
             {
-                _countdown = levelData.timeBetweenWaves;
+                _countdown = _levelData.timeBetweenWaves;
             }
         }
 
@@ -100,7 +106,8 @@ namespace Game
         void OnEnemyDied(Unit u)
         {
             // debug purposes, can be useful later
-            print($"{u.data.unitName} eliminated.");
+            // print($"{u.data.unitName} eliminated.");
+            print("smt died"); // TODO check if functional once rebased from main
         }
 
         public void OnEnemyReachedEnd()
