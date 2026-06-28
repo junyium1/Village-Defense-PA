@@ -53,6 +53,8 @@ public class PlacementState : IBuildingState
 
     public void OnAction(Vector3Int gridPosition)
     {
+        Debug.Log($"Placing at grid: {gridPosition}");
+        
         Vector2Int buildingSize = database.buildingsData[selectedBuildingIndex].Size;
         
         bool validPlacement = CheckPlacementValidity(gridPosition, selectedBuildingIndex) && 

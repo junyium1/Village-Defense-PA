@@ -1060,7 +1060,7 @@ Grid:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1088830634}
   m_Enabled: 1
-  m_CellSize: {x: 10, y: 1, z: 10}
+  m_CellSize: {x: 5, y: 1, z: 5}
   m_CellGap: {x: 0, y: 0, z: 0}
   m_CellLayout: 0
   m_CellSwizzle: 0
@@ -1113,7 +1113,7 @@ MonoBehaviour:
   inputManager: {fileID: 1010018410}
   grid: {fileID: 1088830636}
   database: {fileID: 11400000, guid: cd09795ec62d755489907b55b45f69d0, type: 2}
-  gridSize: {x: 20, y: 20}
+  gridSize: {x: 40, y: 40}
   gridVisualization: {fileID: 1915280541}
   preview: {fileID: 1214938212}
   placementSound: {fileID: 1121312750}
@@ -2354,7 +2354,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 188faa5652ef8114b8a9378e4fca6bc6, type: 2}
+  - {fileID: 2100000, guid: ee3a1f5c34e0e744b8919ef4de95accf, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
