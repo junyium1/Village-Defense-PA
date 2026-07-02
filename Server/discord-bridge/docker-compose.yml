@@ -1,0 +1,20 @@
+services:
+  unity-bot:
+    build: .
+    container_name: unity_discord_bridge
+    restart: unless-stopped
+    env_file:
+      - .env
+    # On a supprimé la ligne "ports" car on n'a plus besoin d'exposer le port localement !
+
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    container_name: cloudflared_tunnel
+    restart: unless-stopped
+    network_mode: host
+    command: tunnel run
+    environment:
+      - TUNNEL_TOKEN=${TUNNEL_TOKEN}
+    depends_on:
+      - unity-bot
+
