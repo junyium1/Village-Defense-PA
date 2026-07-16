@@ -7,6 +7,7 @@ import asyncio
 import math
 import time
 import hmac
+import hashlib
 from contextlib import closing
 from fastapi import FastAPI, Request, HTTPException, Header
 import uvicorn
@@ -19,6 +20,27 @@ API_SECRET_KEY = os.getenv("API_SECRET_KEY")
 DB_PATH = "database.db"
 COLOR_THEME = 0x172132
 PORTAL_TTL_SECONDS = 900  # Durée de vie du portail ET du code PIN associé (15 min)
+
+# --- CATALOGUE D'OBJETS (source unique de vérité : prix, nom, type) ---
+# type : "permanent" (skins, jamais consommé) | "consumable" (retiré via /api/consume-item)
+ITEMS = {
+    "skin_simple": {"nom": "Skin : Fantôme Classique",    "prix": 10,  "type": "permanent"},
+    "skin_boss":   {"nom": "Skin : Office Worker Maudit",  "prix": 250, "type": "permanent"},
+    "shield_10m":  {"nom": "Bouclier Électrique",          "prix": 40,  "type": "consumable"},
+    "boost_30m":   {"nom": "Boost de récolte",             "prix": 60,  "type": "consumable"},
+    "freeze_5m":   {"nom": "Gel temporel",                 "prix": 100, "type": "consumable"},
+    "reinforce":   {"nom": "Appel des renforts",           "prix": 150, "type": "consumable"},
+}
+
+# --- ANTI-TRICHE : le gain de Mana est TOUJOURS calculé par le serveur ---
+# Le client n'envoie jamais un montant : il déclare ce qu'il a fait (vague, kills),
+# signé en HMAC, et le serveur en déduit la récompense, plafonnée et idempotente.
+MANA_SIGNATURE_TTL = 120        # fenêtre de validité d'une requête signée (secondes)
+MANA_REWARD_PER_WAVE = 10       # base par vague nettoyée
+MANA_REWARD_PER_KILL = 1        # bonus par ennemi tué
+MANA_MAX_KILLS_PER_WAVE = 100   # plafond de plausibilité sur enemies_killed
+MANA_MAX_REWARD_PER_CALL = 500  # plafond dur du gain par appel
+MANA_MAX_WAVE_JUMP = 3          # progression max autorisée par appel (anti-saut de vague)
 
 # --- INITIALISATION ---
 app = FastAPI(title="Passerelle Unity-Discord")
@@ -37,11 +59,16 @@ def init_db():
         conn.execute("PRAGMA journal_mode=WAL")
         conn.execute("CREATE TABLE IF NOT EXISTS joueurs (discord_id TEXT PRIMARY KEY, mana INTEGER DEFAULT 0)")
         conn.execute("CREATE TABLE IF NOT EXISTS inventaire (discord_id TEXT, item_id TEXT, date_achat TIMESTAMP DEFAULT CURRENT_TIMESTAMP)")
+        # Anti-rejeu des requêtes de gain de Mana : un nonce ne peut servir qu'une fois.
+        conn.execute("CREATE TABLE IF NOT EXISTS used_nonces (nonce TEXT PRIMARY KEY, created_at REAL)")
 
         # Ajout des colonnes (sans écraser la DB existante)
         for ddl in (
             "ALTER TABLE joueurs ADD COLUMN notif_pref TEXT DEFAULT 'mp'",
             "ALTER TABLE joueurs ADD COLUMN fief_channel_id TEXT",
+            "ALTER TABLE joueurs ADD COLUMN last_wave INTEGER DEFAULT 0",
+            "ALTER TABLE inventaire ADD COLUMN is_consumed INTEGER DEFAULT 0",
+            "ALTER TABLE inventaire ADD COLUMN consumed_at TIMESTAMP",
         ):
             try:
                 conn.execute(ddl)
@@ -201,16 +228,9 @@ class BoutiqueSelect(discord.ui.Select):
 
     async def callback(self, interaction: discord.Interaction):
         item_value = self.values[0]
-        prix = {
-            "skin_simple": 10, "skin_boss": 250, 
-            "shield_10m": 40, "boost_30m": 60, 
-            "freeze_5m": 100, "reinforce": 150
-        }
-        noms = {
-            "skin_simple": "Skin : Fantôme Classique", "skin_boss": "Skin : Office Worker Maudit",
-            "shield_10m": "Bouclier Électrique", "boost_30m": "Boost de récolte",
-            "freeze_5m": "Gel temporel", "reinforce": "Appel des renforts"
-        }
+        meta = ITEMS[item_value]  # catalogue = source unique de vérité (prix / nom)
+        prix_item = meta["prix"]
+        nom_item = meta["nom"]
 
         discord_id = str(interaction.user.id)
         try:
@@ -224,14 +244,14 @@ class BoutiqueSelect(discord.ui.Select):
                     return
                 
                 solde = row[0]
-                if solde < prix[item_value]:
-                    await interaction.response.send_message(f"❌ Pas assez de Mana ! (Il te faut {prix[item_value]} $)", ephemeral=True)
+                if solde < prix_item:
+                    await interaction.response.send_message(f"❌ Pas assez de Mana ! (Il te faut {prix_item} $)", ephemeral=True)
                 else:
-                    nouveau_solde = solde - prix[item_value]
+                    nouveau_solde = solde - prix_item
                     c.execute("UPDATE joueurs SET mana = ? WHERE discord_id = ?", (nouveau_solde, discord_id))
                     c.execute("INSERT INTO inventaire (discord_id, item_id) VALUES (?, ?)", (discord_id, item_value))
                     conn.commit()
-                    await interaction.response.send_message(f"✅ Transaction réussie ! Tu as acheté **{noms[item_value]}**.\n💳 *Mana restant : {nouveau_solde} $*", ephemeral=True)
+                    await interaction.response.send_message(f"✅ Transaction réussie ! Tu as acheté **{nom_item}**.\n💳 *Mana restant : {nouveau_solde} $*", ephemeral=True)
         except sqlite3.Error as e:
             print(f"❌ Erreur DB (boutique) : {e}")
             await interaction.response.send_message("❌ Erreur lors de la transaction.", ephemeral=True)
@@ -572,6 +592,22 @@ def verify_api_key(x_api_key: str):
     if not x_api_key or not hmac.compare_digest(x_api_key, API_SECRET_KEY):
         raise HTTPException(status_code=401, detail="Accès refusé")
 
+def verify_mana_signature(discord_id: str, wave: int, enemies_killed: int,
+                          nonce: str, timestamp: float, signature: str):
+    """Rejoue le HMAC attendu et le compare en temps constant.
+
+    Base signée par Unity : "discord_id:wave:enemies_killed:nonce:timestamp"
+    Clé : API_SECRET_KEY. Retourne (ok: bool, message: str).
+    """
+    # Fraîcheur : borne toute attaque par rejeu à MANA_SIGNATURE_TTL secondes.
+    if abs(time.time() - timestamp) > MANA_SIGNATURE_TTL:
+        return False, "Requête expirée (horloge désynchronisée ou rejeu)"
+    base = f"{discord_id}:{wave}:{enemies_killed}:{nonce}:{timestamp}"
+    attendu = hmac.new(API_SECRET_KEY.encode(), base.encode(), hashlib.sha256).hexdigest()
+    if not hmac.compare_digest(attendu, str(signature)):
+        return False, "Signature invalide"
+    return True, ""
+
 # --- ROUTES API (UNITY -> DISCORD) ---
 @app.post("/webhook/game-event")
 async def receive_unity_event(request: Request, x_api_key: str = Header(None)):
@@ -655,12 +691,142 @@ async def get_inventory(discord_id: str, x_api_key: str = Header(None)):
     try:
         with closing(sqlite3.connect(DB_PATH)) as conn:
             c = conn.cursor()
-            c.execute("SELECT item_id, date_achat FROM inventaire WHERE discord_id = ? ORDER BY date_achat DESC", (discord_id,))
+            # On ne renvoie que les objets ACTIFS (non consommés) : c'est ce dont Unity a besoin.
+            c.execute(
+                "SELECT item_id, date_achat FROM inventaire "
+                "WHERE discord_id = ? AND is_consumed = 0 ORDER BY date_achat DESC",
+                (discord_id,),
+            )
             rows = c.fetchall()
-            inventory = [{"item_id": row[0], "date_achat": row[1]} for row in rows]
+            inventory = [
+                {
+                    "item_id": r[0],
+                    "date_achat": r[1],
+                    "nom": ITEMS.get(r[0], {}).get("nom", r[0]),
+                    "type": ITEMS.get(r[0], {}).get("type", "inconnu"),
+                }
+                for r in rows
+            ]
             return {"discord_id": discord_id, "inventory": inventory}
     except sqlite3.Error as e:
         raise HTTPException(status_code=500, detail=f"Erreur DB : {e}")
+
+@app.post("/api/add-mana")
+async def add_mana(data: dict, x_api_key: str = Header(None)):
+    """Crédite du Mana pour une vague terminée — montant calculé par le SERVEUR.
+
+    Unity envoie ce qu'il a fait (vague, kills) + une signature HMAC ; il n'envoie
+    JAMAIS le montant. Le serveur borne, plafonne et rend l'opération idempotente.
+    """
+    verify_api_key(x_api_key)
+
+    # 1. Champs requis et bien typés
+    try:
+        discord_id = str(data["discord_id"])
+        wave = int(data["wave"])
+        enemies_killed = int(data["enemies_killed"])
+        nonce = str(data["nonce"])
+        timestamp = float(data["timestamp"])
+        signature = str(data["signature"])
+    except (KeyError, TypeError, ValueError):
+        raise HTTPException(status_code=400, detail="Payload incomplet ou mal typé")
+
+    # 2. Signature HMAC (intégrité du payload + fraîcheur anti-rejeu)
+    ok, msg = verify_mana_signature(discord_id, wave, enemies_killed, nonce, timestamp, signature)
+    if not ok:
+        raise HTTPException(status_code=403, detail=msg)
+
+    # 3. Bornes de plausibilité AVANT tout calcul
+    if wave < 1 or enemies_killed < 0:
+        raise HTTPException(status_code=400, detail="Vague ou kills invalides")
+    enemies_killed = min(enemies_killed, MANA_MAX_KILLS_PER_WAVE)
+
+    try:
+        with closing(sqlite3.connect(DB_PATH)) as conn:
+            c = conn.cursor()
+
+            # 4. Anti-rejeu : un nonce ne peut servir qu'une fois
+            try:
+                c.execute("INSERT INTO used_nonces (nonce, created_at) VALUES (?, ?)", (nonce, time.time()))
+            except sqlite3.IntegrityError:
+                raise HTTPException(status_code=409, detail="Nonce déjà utilisé (rejeu détecté)")
+            # Housekeeping : purge des nonces plus vieux que la fenêtre de fraîcheur
+            c.execute("DELETE FROM used_nonces WHERE created_at < ?", (time.time() - MANA_SIGNATURE_TTL,))
+
+            # 5. Le joueur doit être lié
+            c.execute("SELECT mana, last_wave FROM joueurs WHERE discord_id = ?", (discord_id,))
+            row = c.fetchone()
+            if row is None:
+                raise HTTPException(status_code=404, detail="Joueur non lié")
+            solde, last_wave = row
+
+            # 6. Progression monotone : vague NOUVELLE, sans saut suspect (double idempotence)
+            if wave <= last_wave:
+                raise HTTPException(status_code=409, detail="Vague déjà récompensée")
+            if wave - last_wave > MANA_MAX_WAVE_JUMP:
+                raise HTTPException(status_code=422, detail="Saut de vague suspect")
+
+            # 7. Récompense décidée par le serveur, jamais par le client, et plafonnée
+            reward = min(MANA_REWARD_PER_WAVE + enemies_killed * MANA_REWARD_PER_KILL,
+                         MANA_MAX_REWARD_PER_CALL)
+            nouveau_solde = solde + reward
+            c.execute("UPDATE joueurs SET mana = ?, last_wave = ? WHERE discord_id = ?",
+                      (nouveau_solde, wave, discord_id))
+            conn.commit()
+    except sqlite3.Error as e:
+        raise HTTPException(status_code=500, detail=f"Erreur DB : {e}")
+
+    return {"status": "success", "reward": reward, "mana": nouveau_solde, "wave": wave}
+
+
+@app.post("/api/consume-item")
+async def consume_item(data: dict, x_api_key: str = Header(None)):
+    """Retire un exemplaire d'objet consommable de l'inventaire (activé en jeu).
+
+    Consomme le plus ancien exemplaire non encore utilisé (FIFO). Les skins
+    ('permanent') ne sont jamais consommables.
+    """
+    verify_api_key(x_api_key)
+    try:
+        discord_id = str(data["discord_id"])
+        item_id = str(data["item_id"])
+    except (KeyError, TypeError):
+        raise HTTPException(status_code=400, detail="discord_id ou item_id manquant")
+
+    meta = ITEMS.get(item_id)
+    if meta is None:
+        raise HTTPException(status_code=400, detail="Objet inconnu")
+    if meta["type"] == "permanent":
+        raise HTTPException(status_code=409, detail="Objet permanent : non consommable")
+
+    try:
+        with closing(sqlite3.connect(DB_PATH)) as conn:
+            c = conn.cursor()
+            # rowid = identifiant implicite de la ligne (l'inventaire n'a pas de PK explicite)
+            c.execute(
+                "SELECT rowid FROM inventaire "
+                "WHERE discord_id = ? AND item_id = ? AND is_consumed = 0 "
+                "ORDER BY date_achat ASC LIMIT 1",
+                (discord_id, item_id),
+            )
+            row = c.fetchone()
+            if row is None:
+                raise HTTPException(status_code=404, detail="Aucun exemplaire disponible de cet objet")
+            c.execute(
+                "UPDATE inventaire SET is_consumed = 1, consumed_at = CURRENT_TIMESTAMP WHERE rowid = ?",
+                (row[0],),
+            )
+            c.execute(
+                "SELECT COUNT(*) FROM inventaire WHERE discord_id = ? AND item_id = ? AND is_consumed = 0",
+                (discord_id, item_id),
+            )
+            restant = c.fetchone()[0]
+            conn.commit()
+    except sqlite3.Error as e:
+        raise HTTPException(status_code=500, detail=f"Erreur DB : {e}")
+
+    return {"status": "success", "item_id": item_id, "remaining": restant}
+
 
 @bot.command()
 @commands.has_permissions(administrator=True)
