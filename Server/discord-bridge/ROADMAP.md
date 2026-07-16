@@ -45,9 +45,23 @@
 | `POST /webhook/game-event` | Unity signale une attaque → alerte routée |
 | `POST /api/link-account`   | Valide le code PIN |
 | `GET  /api/player/{id}`    | Renvoie mana + notif_pref |
-| `GET  /api/inventory/{id}` | Renvoie l'inventaire |
+| `GET  /api/inventory/{id}` | Renvoie l'inventaire ACTIF (non consommé) enrichi (nom, type) |
+| `POST /api/add-mana`       | Crédite du Mana (montant calculé serveur, signé HMAC, anti-rejeu) |
+| `POST /api/consume-item`   | Retire un objet consommable de l'inventaire (activé en jeu) |
 
-### 8. Infrastructure
+### 8. Sécurité anti-triche (gain de Mana)
+- Le client **n'envoie jamais** un montant : il déclare `wave` + `enemies_killed`, le
+  **serveur calcule** la récompense (`MANA_REWARD_PER_WAVE` + kills, plafonnée).
+- **Signature HMAC-SHA256** de `discord_id:wave:enemies_killed:nonce:timestamp` (clé =
+  `API_SECRET_KEY`), fenêtre de fraîcheur de 120 s.
+- **Anti-rejeu** : table `used_nonces` (un nonce = un usage).
+- **Idempotence + anti-inflation** : `last_wave` monotone (vague déjà réclamée refusée,
+  saut de vague > 3 refusé), kills plafonnés à 100.
+- ⚠️ **Limite honnête** : le secret étant embarqué dans le client Unity, un reverse-engineer
+  déterminé peut forger des signatures. Ces protections **bornent** le gain au maximum d'un
+  joueur légitime rapide ; elles ne le rendent pas impossible sans simulation serveur.
+
+### 9. Infrastructure
 - Dockerfile (Python 3.11-slim) + docker-compose avec **tunnel Cloudflare** (`cloudflared`).
 - Aucun port exposé localement : tout passe par le tunnel.
 - `.env` : `DISCORD_TOKEN`, `CHANNEL_ID`, `API_SECRET_KEY`, `TUNNEL_TOKEN`.
@@ -64,16 +78,15 @@
 - [ ] Wrapper HTTP C# (`UnityWebRequest`) ajoutant le header `x-api-key`.
 
 ### 🟠 B. Corrections serveur
-- [ ] **Bug event-loop** sur `/webhook/game-event` : `await send_attack_alert(...)` direct
-      s'exécute sur la boucle d'uvicorn au lieu de celle du bot → doit passer par
-      `asyncio.run_coroutine_threadsafe(..., bot.loop)` (comme dans `/api/link-account`).
+- [x] **Bug event-loop** sur `/webhook/game-event` → corrigé (`run_coroutine_threadsafe` + `wrap_future`).
+- [x] Clé API en temps constant (`hmac.compare_digest`).
+- [x] SQLite WAL (2 threads bot + API).
+- [x] Route `/api/add-mana` sécurisée (anti-triche) + tests logiques 10/10.
+- [x] Consommation d'inventaire (`is_consumed` + `/api/consume-item`).
 - [ ] Tests Discord de bout en bout (liaison réelle, boutique, boss à plusieurs, défense).
 
-### 🟡 C. Points de design à clarifier
-- [ ] **`CHANNEL_ID`** lu dans `.env` mais jamais utilisé → config morte.
-- [ ] **Aucune route pour créditer du Mana depuis le gameplay Unity** (le Mana ne se gagne
-      aujourd'hui que via Discord) → probablement un manque.
-- [ ] **Inventaire jamais « consommé »** : pas de champ / route marquant un objet comme utilisé.
-- [ ] Clé API comparée avec `!=` (pas constant-time) — mineur.
-- [ ] SQLite : 2 threads (bot + API) écrivent dans la même DB → risque ponctuel de
-      `database is locked`.
+### 🟡 C. Reste mineur / à décider plus tard
+- [ ] **`CHANNEL_ID`** lu dans `.env` mais jamais utilisé → config morte (à supprimer ou brancher).
+- [ ] Réglage fin des constantes de récompense (`MANA_REWARD_*`) selon l'économie voulue.
+- [ ] (Option) Expiration temporelle serveur des boosts via `expires_at` si besoin d'un timer
+      autoritatif côté serveur (aujourd'hui le timer du buff tourne côté Unity).
