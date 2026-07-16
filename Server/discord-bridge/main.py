@@ -6,6 +6,7 @@ import random
 import asyncio
 import math
 import time
+import hmac
 from contextlib import closing
 from fastapi import FastAPI, Request, HTTPException, Header
 import uvicorn
@@ -32,6 +33,8 @@ pending_links = {}
 # --- BASE DE DONNÉES ET OUTILS ---
 def init_db():
     with closing(sqlite3.connect(DB_PATH)) as conn:
+        # WAL : les lecteurs ne bloquent plus les écrivains (bot + API sur 2 threads distincts).
+        conn.execute("PRAGMA journal_mode=WAL")
         conn.execute("CREATE TABLE IF NOT EXISTS joueurs (discord_id TEXT PRIMARY KEY, mana INTEGER DEFAULT 0)")
         conn.execute("CREATE TABLE IF NOT EXISTS inventaire (discord_id TEXT, item_id TEXT, date_achat TIMESTAMP DEFAULT CURRENT_TIMESTAMP)")
 
@@ -563,11 +566,16 @@ async def send_attack_alert(discord_id: str, action: str, attacker_name: str = "
 
     return False
 
+# --- SÉCURITÉ API ---
+def verify_api_key(x_api_key: str):
+    """Vérifie la clé API en temps constant (protège contre les timing attacks)."""
+    if not x_api_key or not hmac.compare_digest(x_api_key, API_SECRET_KEY):
+        raise HTTPException(status_code=401, detail="Accès refusé")
+
 # --- ROUTES API (UNITY -> DISCORD) ---
 @app.post("/webhook/game-event")
 async def receive_unity_event(request: Request, x_api_key: str = Header(None)):
-    if x_api_key != API_SECRET_KEY:
-        raise HTTPException(status_code=401, detail="Accès refusé")
+    verify_api_key(x_api_key)
     
     try:
         data = await request.json()
@@ -581,7 +589,13 @@ async def receive_unity_event(request: Request, x_api_key: str = Header(None)):
     if not discord_id:
         raise HTTPException(status_code=400, detail="discord_id manquant")
 
-    success = await send_attack_alert(discord_id, action, joueur)
+    # Le bot tourne dans un thread séparé avec sa propre boucle d'événements ;
+    # on planifie la coroutine sur bot.loop puis on attend le résultat côté uvicorn
+    # (un await direct provoquerait "Future attached to a different loop").
+    future = asyncio.run_coroutine_threadsafe(
+        send_attack_alert(discord_id, action, joueur), bot.loop
+    )
+    success = await asyncio.wrap_future(future)
     
     if success:
         return {"status": "success", "message": "Alerte d'attaque routée avec succès"}
@@ -590,8 +604,7 @@ async def receive_unity_event(request: Request, x_api_key: str = Header(None)):
 
 @app.post("/api/link-account")
 async def link_account(data: dict, x_api_key: str = Header(None)):
-    if x_api_key != API_SECRET_KEY:
-        raise HTTPException(status_code=401, detail="Accès refusé")
+    verify_api_key(x_api_key)
 
     try:
         code = int(data.get("code"))
@@ -622,8 +635,7 @@ async def link_account(data: dict, x_api_key: str = Header(None)):
 
 @app.get("/api/player/{discord_id}")
 async def get_player_data(discord_id: str, x_api_key: str = Header(None)):
-    if x_api_key != API_SECRET_KEY:
-        raise HTTPException(status_code=401, detail="Accès refusé")
+    verify_api_key(x_api_key)
     try:
         with closing(sqlite3.connect(DB_PATH)) as conn:
             c = conn.cursor()
@@ -639,8 +651,7 @@ async def get_player_data(discord_id: str, x_api_key: str = Header(None)):
 
 @app.get("/api/inventory/{discord_id}")
 async def get_inventory(discord_id: str, x_api_key: str = Header(None)):
-    if x_api_key != API_SECRET_KEY:
-        raise HTTPException(status_code=401, detail="Accès refusé")
+    verify_api_key(x_api_key)
     try:
         with closing(sqlite3.connect(DB_PATH)) as conn:
             c = conn.cursor()
