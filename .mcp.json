@@ -1,8 +1,15 @@
 {
   "mcpServers": {
-    "unity-mcp": {
-      "command": "${USERPROFILE}/.unity/relay/relay_win.exe",
-      "args": ["--mcp"]
+    "unityMCP": {
+      "command": "${USERPROFILE}/AppData/Local/Programs/Python/Python311/Scripts/uvx.exe",
+      "args": [
+        "--from",
+        "mcpforunityserver==10.1.0",
+        "mcp-for-unity",
+        "--transport",
+        "stdio"
+      ],
+      "type": "stdio"
     }
   }
 }

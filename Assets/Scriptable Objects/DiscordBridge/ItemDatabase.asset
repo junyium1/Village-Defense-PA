@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dd0f6a79bd43d304c9a50b04ec44d1a8, type: 3}
+  m_Name: ItemDatabase
+  m_EditorClassIdentifier: Assembly-CSharp::DiscordBridge.Data.ItemDatabase
+  items:
+  - {fileID: 11400000, guid: 3388dfb4ccc09bc4bbc6bb0c4be90448, type: 2}
+  - {fileID: 11400000, guid: 6cb004c1f431b7144bfabb5194b7835d, type: 2}
+  - {fileID: 11400000, guid: c6665eb89d7933c439b6e0d50471306e, type: 2}
+  - {fileID: 11400000, guid: 3dddd50c7a83ed84cb2608f8dc2c9aad, type: 2}
+  - {fileID: 11400000, guid: b3da65f40e35d1046905212e0a14a8de, type: 2}
+  - {fileID: 11400000, guid: bdfeb60aecff8864d97ec9e4d742e8eb, type: 2}

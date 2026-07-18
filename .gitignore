@@ -100,3 +100,10 @@ InitTestScene*.unity*
 .idea/.idea.ProjetPABis/.idea/indexLayout.xml
 .idea/.idea.ProjetPABis/.idea/workspace.xml
 .idea/
+
+
+.claude/
+
+# Secret local — clé API du bridge Discord (ne JAMAIS committer)
+/Assets/Scriptable Objects/DiscordBridge/ApiConfig.asset
+/Assets/Scriptable Objects/DiscordBridge/ApiConfig.asset.meta
