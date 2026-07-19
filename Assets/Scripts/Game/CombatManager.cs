@@ -31,8 +31,9 @@ namespace Game
         [Header("Runtime")] public int currentWave = 0;
         public int playerLives = 2;
         public bool waveInProgress = false;
-
         float _countdown;
+        public int GoldEarned { get; private set; }
+        public int CrystalsEarned { get; private set; }
 
         // -------------- singleton --------------
         void Awake()
@@ -101,7 +102,8 @@ namespace Game
                 yield return new WaitUntil(NoEnemyAlive);
                 //TODO TEST!!!
                 float integrityRatio = (float)playerLives / _levelData.maxLives;
-                int crystalsEarned = Mathf.RoundToInt(integrityRatio * _levelData.maxCrystalsReward);
+                CrystalsEarned = Mathf.RoundToInt(integrityRatio * _levelData.maxCrystalsReward);                int crystalsEarned = Mathf.RoundToInt(integrityRatio * _levelData.maxCrystalsReward);
+                GoldEarned = _levelData.goldReward;
                 Player.Instance.EarnCrystals(crystalsEarned);
                 Player.Instance.EarnGold(_levelData.goldReward);
 

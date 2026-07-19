@@ -11,6 +11,10 @@ namespace Menus
         [SerializeField] TextMeshProUGUI titleText;
         [SerializeField] TextMeshProUGUI messageText;
         [SerializeField] GameObject nextLevelButton;
+        
+        [SerializeField] TextMeshProUGUI starsText;
+        [SerializeField] TextMeshProUGUI goldText;
+        [SerializeField] TextMeshProUGUI crystalsText;
 
         private void Start()
         {
@@ -23,9 +27,29 @@ namespace Menus
             titleText.text = won ? "Victory!" : "Defeat";
             messageText.text = won ? "All waves cleared, yay!" : "Oh no, your village was destroyed...";
 
+            LevelData current = LevelSelectManager.SelectedLevel;
+            CombatManager combat = CombatManager.Instance;
+
+            int stars = 0;
+            int goldEarned = 0;
+            int crystalsEarned = 0;
+            
+            if (combat && current)
+            {
+                stars = CalculateStars(won, combat.playerLives, current.maxLives);
+                if (won)
+                {
+                    goldEarned = combat.GoldEarned;
+                    crystalsEarned = combat.CrystalsEarned;
+                }
+            }
+            
+            if (starsText) starsText.text = BuildStarString(stars);
+            if (goldText) goldText.text = $"+{goldEarned}";
+            if (crystalsText) crystalsText.text = $"+{crystalsEarned}";
+            
             if (nextLevelButton)
             {
-                LevelData current = LevelSelectManager.SelectedLevel;
                 bool isFinalLevel = !current || current.levelID >= 7;
                 nextLevelButton.SetActive(won && !isFinalLevel);
             }
@@ -72,6 +96,19 @@ namespace Menus
             LevelSelectManager.SelectNextLevel(next);
             Time.timeScale = 1f;
             SceneManager.LoadScene("GameScene");
+        }
+
+        int CalculateStars(bool won, int lives, int maxLives)
+        {
+            if (!won) return 0;
+            if (lives >= maxLives) return 3;
+            if (lives > maxLives / 2f) return 2;
+            return 1;
+        }
+
+        string BuildStarString(int stars)
+        {
+            return new string('*', stars) + new string('-', 3 - stars);
         }
     }
 }
