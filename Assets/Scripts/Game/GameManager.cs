@@ -1,4 +1,5 @@
 using Menus;
+using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -21,6 +22,7 @@ namespace Game
         public GamePhase currentPhase;
         private GamePhase _previousPhase; // to store what phase to go back to
         [SerializeField] LevelEndMenuManager levelEndMenuManager;
+        [SerializeField] TextMeshProUGUI levelTitle;
 
         void Awake()
         {
@@ -37,7 +39,12 @@ namespace Game
         }
 
         // TODO by default start at placement, change later when include story etc
-        void Start() => EnterPlacement();
+        void Start()
+        {
+            if (levelTitle != null && LevelSelectManager.SelectedLevel != null)
+                levelTitle.text = LevelSelectManager.SelectedLevel.levelName;
+            EnterPlacement();
+        }
 
         public void EnterPlacement()
         {
