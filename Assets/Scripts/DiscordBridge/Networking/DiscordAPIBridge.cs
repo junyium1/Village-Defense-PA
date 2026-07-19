@@ -59,6 +59,11 @@ namespace DiscordBridge.Networking
             return SendAsync<GameEventResponse>(UnityWebRequest.kHttpVerbPOST, "/webhook/game-event", body, cancellationToken);
         }
 
+        public Awaitable<ApiResult<BattleReportResponse>> SendBattleReportAsync(BattleReportRequest dto, CancellationToken cancellationToken = default)
+        {
+            return SendAsync<BattleReportResponse>(UnityWebRequest.kHttpVerbPOST, "/api/battle-report", dto, cancellationToken);
+        }
+
         public Awaitable<ApiResult<ConsumeItemResponse>> ConsumeItemAsync(string discordId, string itemId, CancellationToken cancellationToken = default)
         {
             var body = new ConsumeItemRequest { DiscordId = discordId, ItemId = itemId };
