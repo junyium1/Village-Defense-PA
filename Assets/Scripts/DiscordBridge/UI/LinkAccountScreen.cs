@@ -1,15 +1,18 @@
 using DiscordBridge.Controllers;
+using DiscordBridge.Data;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
 namespace DiscordBridge.UI
 {
-    // Vue pure : ne parle qu'à LinkAccountController, jamais à DiscordAPIBridge/SessionStore directement.
+    // Vue pure : ne parle qu'à LinkAccountController (actions) et PlayerProfileData (état,
+    // ScriptableObject), jamais à DiscordAPIBridge/SessionStore directement.
     // Ouvert à la demande (LinkAccountMenuButton.Open), affiche l'état "lié" ou "non lié".
     public class LinkAccountScreen : MonoBehaviour
     {
         [SerializeField] LinkAccountController controller;
+        [SerializeField] PlayerProfileData profileData;
 
         [Header("Etat NON lie")]
         [SerializeField] GameObject notLinkedGroup;
@@ -24,6 +27,9 @@ namespace DiscordBridge.UI
         [Header("Commun")]
         [SerializeField] TextMeshProUGUI statusText;
         [SerializeField] Button closeButton;
+
+        [Header("Animation (optionnel)")]
+        [SerializeField] UIPanelAnimator panelAnimator;
 
         void Awake()
         {
@@ -53,6 +59,7 @@ namespace DiscordBridge.UI
             controller.OnLinkSucceeded += HandleLinkSucceeded;
             controller.OnLinkFailed += HandleLinkFailed;
             controller.OnUnlinked += HandleUnlinked;
+            if (profileData != null) profileData.OnProfileUpdated += Refresh;
 
             SetStatus(string.Empty);
             SetInteractable(true);
@@ -61,6 +68,7 @@ namespace DiscordBridge.UI
 
         void OnDisable()
         {
+            if (profileData != null) profileData.OnProfileUpdated -= Refresh;
             if (controller == null) return;
 
             controller.OnLinkSucceeded -= HandleLinkSucceeded;
@@ -72,11 +80,15 @@ namespace DiscordBridge.UI
         public void Open()
         {
             gameObject.SetActive(true);
+            if (panelAnimator != null) panelAnimator.PlayOpen();
         }
 
         void Close()
         {
-            gameObject.SetActive(false);
+            if (panelAnimator != null)
+                panelAnimator.PlayClose(() => gameObject.SetActive(false));
+            else
+                gameObject.SetActive(false);
         }
 
         // Affiche le bon groupe selon l'etat de liaison courant.
@@ -86,14 +98,18 @@ namespace DiscordBridge.UI
             if (notLinkedGroup != null) notLinkedGroup.SetActive(!linked);
             if (linkedGroup != null) linkedGroup.SetActive(linked);
             if (linked && linkedInfoText != null)
-                linkedInfoText.text = "Compte lie";
+            {
+                linkedInfoText.text = profileData != null && profileData.IsLoaded
+                    ? $"Compte lié   —   Mana : {profileData.Mana}"
+                    : "Compte lié";
+            }
         }
 
         void OnSubmitClicked()
         {
             if (controller == null)
             {
-                SetStatus("Erreur de configuration (controleur manquant).");
+                SetStatus("Erreur de configuration (contrôleur manquant).");
                 return;
             }
 
@@ -121,7 +137,7 @@ namespace DiscordBridge.UI
 
         void HandleLinkSucceeded()
         {
-            SetStatus("Compte lie !");
+            SetStatus("Compte lié !");
             Refresh();
         }
 
@@ -130,7 +146,7 @@ namespace DiscordBridge.UI
         void HandleUnlinked()
         {
             if (codeInput != null) codeInput.text = string.Empty;
-            SetStatus("Compte delie.");
+            SetStatus("Compte délié.");
             Refresh();
         }
 

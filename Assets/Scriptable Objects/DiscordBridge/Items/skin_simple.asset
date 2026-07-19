@@ -13,7 +13,8 @@ MonoBehaviour:
   m_Name: skin_simple
   m_EditorClassIdentifier: Assembly-CSharp::DiscordBridge.Data.ItemDefinition
   <Id>k__BackingField: skin_simple
-  <DisplayName>k__BackingField: 'Skin : Fantome Classique'
+  <DisplayName>k__BackingField: "Skin : Fant\xF4me Classique"
   <Icon>k__BackingField: {fileID: 0}
   <Description>k__BackingField: 
   <Category>k__BackingField: 0
+  <DurationMinutes>k__BackingField: 0

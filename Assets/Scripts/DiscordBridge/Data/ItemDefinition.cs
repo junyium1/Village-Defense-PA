@@ -20,5 +20,8 @@ namespace DiscordBridge.Data
         [field: SerializeField] public Sprite Icon { get; private set; }
         [field: SerializeField, TextArea] public string Description { get; private set; }
         [field: SerializeField] public ItemCategory Category { get; private set; }
+
+        [Tooltip("Durée de l'effet en minutes une fois consommé (0 = effet instantané ou objet permanent).")]
+        [field: SerializeField] public int DurationMinutes { get; private set; }
     }
 }

@@ -13,7 +13,8 @@ MonoBehaviour:
   m_Name: shield_10m
   m_EditorClassIdentifier: Assembly-CSharp::DiscordBridge.Data.ItemDefinition
   <Id>k__BackingField: shield_10m
-  <DisplayName>k__BackingField: Bouclier Electrique
+  <DisplayName>k__BackingField: "Bouclier \xC9lectrique"
   <Icon>k__BackingField: {fileID: 0}
   <Description>k__BackingField: 
   <Category>k__BackingField: 1
+  <DurationMinutes>k__BackingField: 10

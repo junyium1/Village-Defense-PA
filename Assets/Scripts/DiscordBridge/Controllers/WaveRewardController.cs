@@ -17,6 +17,14 @@ namespace DiscordBridge.Controllers
                 return;
             }
 
+            // Scène de jeu lancée directement dans l'Éditeur (sans passer par le menu) :
+            // le bootstrap DontDestroyOnLoad n'existe pas, on ignore proprement.
+            if (DiscordAPIBridge.Instance == null)
+            {
+                Debug.LogWarning("[DiscordBridge] WaveRewardController : DiscordAPIBridge absent, récompense ignorée.");
+                return;
+            }
+
             _ = RequestRewardAsync(waveIndex, enemiesDefeated);
         }
 

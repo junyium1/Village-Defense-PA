@@ -14,6 +14,13 @@ namespace DiscordBridge.Controllers
         [SerializeField] InventoryData inventory;
         [SerializeField] ItemDatabase itemDatabase;
 
+        [Tooltip("Re-synchronisation automatique toutes les N secondes (0 = désactivé). " +
+                 "/api/player est la route de polling prévue côté serveur.")]
+        [SerializeField] float pollIntervalSeconds = 0f;
+
+        float _nextPollAt;
+        bool _syncInFlight;
+
         void Awake()
         {
             // Awake de DiscordAPIBridge (qui fixe Instance) s'exécute avant le Start de cet
@@ -26,6 +33,17 @@ namespace DiscordBridge.Controllers
 
         async void Start() => await SyncAsync(destroyCancellationToken);
 
+        void Update()
+        {
+            if (pollIntervalSeconds <= 0f || _syncInFlight || !SessionStore.IsLinked) return;
+
+            if (Time.unscaledTime >= _nextPollAt)
+            {
+                _nextPollAt = Time.unscaledTime + pollIntervalSeconds;
+                _ = SyncAsync(destroyCancellationToken);
+            }
+        }
+
         public async Awaitable SyncAsync(CancellationToken cancellationToken = default)
         {
             if (!SessionStore.IsLinked)
@@ -34,6 +52,20 @@ namespace DiscordBridge.Controllers
                 return;
             }
 
+            if (_syncInFlight) return; // pas de synchros concurrentes (polling + bouton Rafraîchir)
+            _syncInFlight = true;
+            try
+            {
+                await SyncInternalAsync(cancellationToken);
+            }
+            finally
+            {
+                _syncInFlight = false;
+            }
+        }
+
+        async Awaitable SyncInternalAsync(CancellationToken cancellationToken)
+        {
             string discordId = SessionStore.DiscordId;
 
             var playerResult = await DiscordAPIBridge.Instance.GetPlayerDataAsync(discordId, cancellationToken);

@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using Game.Units;
 using UnityEngine;
@@ -9,6 +10,16 @@ namespace Game
     {
         public static CombatManager Instance { get; private set; }
         LevelData _levelData;
+
+        // Événements observés par les systèmes externes (ex: pont Discord) sans couplage :
+        // WaveStarted(numéro de vague) au début du spawn ; WaveRewardReady(vague, kills)
+        // quand une vague peut être créditée (au départ de la suivante, ou à la victoire).
+        public event Action<int> WaveStarted;
+        public event Action<int, int> WaveRewardReady;
+
+        public bool IsFinalWave => _levelData != null && currentWave >= _levelData.totalWaves;
+
+        int _killsThisWave;
 
         [Header("Wave Settings")] [SerializeField]
         GameObject enemyPrefab;
@@ -67,6 +78,16 @@ namespace Game
             waveInProgress = true;
             currentWave++;
 
+            // La vague précédente est créditée au départ de la suivante : les kills comptés
+            // entre les deux lui appartiennent (le serveur plafonne de toute façon les kills).
+            if (currentWave > 1)
+            {
+                WaveRewardReady?.Invoke(currentWave - 1, _killsThisWave);
+                _killsThisWave = 0;
+            }
+
+            WaveStarted?.Invoke(currentWave);
+
             for (int i = 0; i < currentWave; i++)
             {
                 SpawnEnemy();
@@ -85,6 +106,10 @@ namespace Game
                 int crystalsEarned = Mathf.RoundToInt(integrityRatio * _levelData.maxCrystalsReward);
                 Player.Instance.EarnCrystals(crystalsEarned);
                 Player.Instance.EarnGold(_levelData.goldReward);
+
+                // Dernière vague : créditée ici (il n'y a pas de vague suivante pour la flusher).
+                WaveRewardReady?.Invoke(currentWave, _killsThisWave);
+                _killsThisWave = 0;
 
                 GameManager.Instance.OnGameOver(true);
             }
@@ -105,6 +130,7 @@ namespace Game
 
         void OnEnemyDied(Unit u)
         {
+            _killsThisWave++;
             // debug purposes, can be useful later
             // print($"{u.data.unitName} eliminated.");
             print("smt died"); // TODO check if functional once rebased from main
