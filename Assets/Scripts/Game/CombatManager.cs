@@ -98,9 +98,7 @@ namespace Game
             if (currentWave >= _levelData.totalWaves)
             {
                 // wait for remaining enemies to die then trigger victory
-                yield return new WaitUntil(() =>
-                    FindObjectsByType<Unit>(FindObjectsSortMode.None).Length == 0
-                );
+                yield return new WaitUntil(NoEnemyAlive);
                 //TODO TEST!!!
                 float integrityRatio = (float)playerLives / _levelData.maxLives;
                 int crystalsEarned = Mathf.RoundToInt(integrityRatio * _levelData.maxCrystalsReward);
@@ -117,6 +115,16 @@ namespace Game
             {
                 _countdown = _levelData.timeBetweenWaves;
             }
+        }
+
+        // Seule la faction Enemy compte pour la victoire : des unités ALLIÉES encore en vie
+        // (ex: renforts Golem du pont Discord) ne doivent pas bloquer la fin de partie.
+        static bool NoEnemyAlive()
+        {
+            foreach (Unit unit in FindObjectsByType<Unit>(FindObjectsSortMode.None))
+                if (unit.data != null && unit.data.faction == Faction.Enemy)
+                    return false;
+            return true;
         }
 
         void SpawnEnemy()

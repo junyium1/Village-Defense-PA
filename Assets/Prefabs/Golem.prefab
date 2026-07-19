@@ -14,6 +14,7 @@ GameObject:
   - component: {fileID: 3537476999270989726}
   - component: {fileID: 1260457309612015854}
   - component: {fileID: 4696569270207272285}
+  - component: {fileID: 1370473363634936031}
   m_Layer: 0
   m_Name: Golem
   m_TagString: Ally
@@ -143,3 +144,15 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Game.Units.Unit
   data: {fileID: 11400000, guid: 6a0d059ae21d65740b0c031be36ab63c, type: 2}
   health: {fileID: 0}
+--- !u!114 &1370473363634936031
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4467710490024346862}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 21a059b907a245dc93de1b2923803136, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Game.Units.MeleeAttack

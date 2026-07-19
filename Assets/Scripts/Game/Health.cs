@@ -8,6 +8,9 @@ namespace Game
         public float CurrentHp { get; private set; }
         public bool IsDead { get; private set; }
 
+        // Immunité temporaire aux dégâts (ex: bouclier consommable). Posée de l'extérieur.
+        public bool Invulnerable { get; set; }
+
         public event System.Action<Health> OnDeath;
         public event System.Action<float, float> OnDamaged; // current, max — for UI
 
@@ -17,7 +20,7 @@ namespace Game
 
         public void TakeDamage(float amount)
         {
-            if (IsDead) return;
+            if (IsDead || Invulnerable) return;
             CurrentHp -= amount;
             OnDamaged?.Invoke(CurrentHp, maxHp);
             if (CurrentHp <= 0) Die();

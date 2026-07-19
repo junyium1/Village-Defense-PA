@@ -25,6 +25,11 @@ namespace DiscordBridge.UI
         [SerializeField] Button refreshButton;
         [SerializeField] Button closeButton;
 
+        [Header("Buffs actifs (optionnel)")]
+        [SerializeField] ActiveEffectsData activeEffects;
+        [SerializeField] ItemDatabase itemDatabase;
+        [SerializeField] TextMeshProUGUI activeBuffsText;
+
         [Header("Animation (optionnel)")]
         [SerializeField] UIPanelAnimator panelAnimator;
 
@@ -52,6 +57,11 @@ namespace DiscordBridge.UI
                 consumeController.OnConsumeSucceeded += HandleConsumeSucceeded;
                 consumeController.OnConsumeFailed += HandleConsumeFailed;
             }
+            if (activeEffects != null)
+            {
+                activeEffects.OnEffectsChanged += RefreshActiveBuffs;
+                InvokeRepeating(nameof(RefreshActiveBuffs), 0f, 1f); // décompte à la seconde
+            }
             Rebuild();
         }
 
@@ -62,6 +72,11 @@ namespace DiscordBridge.UI
             {
                 consumeController.OnConsumeSucceeded -= HandleConsumeSucceeded;
                 consumeController.OnConsumeFailed -= HandleConsumeFailed;
+            }
+            if (activeEffects != null)
+            {
+                activeEffects.OnEffectsChanged -= RefreshActiveBuffs;
+                CancelInvoke(nameof(RefreshActiveBuffs));
             }
         }
 
@@ -144,6 +159,31 @@ namespace DiscordBridge.UI
                 SetStatus("Inventaire vide.");
             else
                 SetStatus(string.Empty);
+        }
+
+        // Ligne "Effets actifs : Gel temporel 4:32 · Boost de récolte 27:45", vide sinon.
+        void RefreshActiveBuffs()
+        {
+            if (activeBuffsText == null || activeEffects == null) return;
+
+            var snapshot = activeEffects.GetSnapshot();
+            if (snapshot.Count == 0)
+            {
+                activeBuffsText.text = string.Empty;
+                return;
+            }
+
+            var parts = new List<string>(snapshot.Count);
+            foreach ((string itemId, float remainingSeconds) in snapshot)
+            {
+                string name = itemDatabase != null && itemDatabase.GetById(itemId) != null
+                    ? itemDatabase.GetById(itemId).DisplayName
+                    : itemId;
+                int total = Mathf.Max(0, Mathf.CeilToInt(remainingSeconds));
+                parts.Add($"{name} {total / 60}:{total % 60:00}");
+            }
+
+            activeBuffsText.text = "Effets actifs : " + string.Join("  ·  ", parts);
         }
 
         void SetRowsInteractable(bool interactable)

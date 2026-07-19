@@ -13,6 +13,7 @@ namespace DiscordBridge.Controllers
         [SerializeField] PlayerProfileData playerProfile;
         [SerializeField] InventoryData inventory;
         [SerializeField] ItemDatabase itemDatabase;
+        [SerializeField] ActiveEffectsData activeEffects;
 
         [Tooltip("Re-synchronisation automatique toutes les N secondes (0 = désactivé). " +
                  "/api/player est la route de polling prévue côté serveur.")]
@@ -72,6 +73,7 @@ namespace DiscordBridge.Controllers
             if (playerResult.Success)
             {
                 playerProfile.Populate(playerResult.Data.Mana, playerResult.Data.NotifPref);
+                ApplyServerEffects(playerResult.Data.ActiveEffects);
             }
             else
             {
@@ -87,6 +89,20 @@ namespace DiscordBridge.Controllers
             {
                 Debug.LogWarning($"[DiscordBridge] Échec de récupération de l'inventaire ({inventoryResult.StatusCode}) : {inventoryResult.ErrorMessage}");
             }
+        }
+
+        // Réaligne les buffs locaux sur la table effets_actifs du serveur — c'est ce qui
+        // fait survivre un buff (gel, bouclier, boost) à un redémarrage du jeu.
+        void ApplyServerEffects(System.Collections.Generic.List<DiscordBridge.DTOs.ActiveEffectDto> serverEffects)
+        {
+            if (activeEffects == null) return; // champ optionnel : ancien câblage de scène
+
+            var mapped = new System.Collections.Generic.List<(string, double)>();
+            if (serverEffects != null)
+                foreach (DiscordBridge.DTOs.ActiveEffectDto dto in serverEffects)
+                    mapped.Add((dto.ItemId, dto.RemainingSeconds));
+
+            activeEffects.SyncFromServer(mapped);
         }
     }
 }

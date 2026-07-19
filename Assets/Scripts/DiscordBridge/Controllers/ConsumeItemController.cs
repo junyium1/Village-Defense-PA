@@ -43,11 +43,27 @@ namespace DiscordBridge.Controllers
             }
 
             // L'effet démarre côté client au moment de la consommation validée par le serveur.
-            if (activeEffects != null && itemDatabase != null)
+            // Durée : barème SERVEUR (duration_seconds) en priorité, ItemDefinition en repli
+            // (serveur pas encore à jour). La synchro qui suit réalignera de toute façon
+            // sur la table effets_actifs.
+            int durationSeconds = result.Data.DurationSeconds;
+            if (durationSeconds <= 0 && itemDatabase != null)
             {
                 ItemDefinition definition = itemDatabase.GetById(itemId);
                 if (definition != null)
-                    activeEffects.Activate(itemId, definition.DurationMinutes);
+                    durationSeconds = definition.DurationMinutes * 60;
+            }
+
+            if (durationSeconds > 0)
+            {
+                if (activeEffects != null)
+                    activeEffects.ActivateForSeconds(itemId, durationSeconds);
+            }
+            else
+            {
+                // Durée nulle = effet "one-shot" (ex: reinforce) : le serveur a déjà retiré
+                // l'exemplaire, on le met en réserve locale jusqu'à la prochaine partie.
+                PendingItemEffectsStore.Add(itemId);
             }
 
             if (profileSyncController != null)

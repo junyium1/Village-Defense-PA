@@ -102,7 +102,27 @@ InitTestScene*.unity*
 .idea/
 
 
+# Outillage IA — jamais versionné
+CLAUDE.md
 .claude/
+.claudeignore
+.claude_memory.md
+.mcp.json
+AGENTS.md
+TASKS.md
+cleanup_log.md
+scripts/delegate.ps1
+.delegate-logs/
+.opencode/
+opencode.json
+/Packages/com.coplaydev.unity-mcp/
+/Packages/packages-lock.json
+
+# Captures de debug et fichiers de récupération Unity
+/Assets/Screenshots/
+/Assets/Screenshots.meta
+/Assets/_Recovery/
+/Assets/_Recovery.meta
 
 # Secret local — clé API du bridge Discord (ne JAMAIS committer)
 /Assets/Scriptable Objects/DiscordBridge/ApiConfig.asset
