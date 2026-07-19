@@ -100,3 +100,18 @@ InitTestScene*.unity*
 .idea/.idea.ProjetPABis/.idea/indexLayout.xml
 .idea/.idea.ProjetPABis/.idea/workspace.xml
 .idea/
+
+# Fichiers IA (Claude Code / OpenCode / MCP) — locaux, ne pas commiter
+.claude/
+.claude_memory.md
+.claudeignore
+CLAUDE.md
+AGENTS.md
+TASKS.md
+.mcp.json
+cleanup_log.md
+/Packages/com.coplaydev.unity-mcp/
+
+# Secret API DiscordBridge — ne JAMAIS commiter
+/Assets/Scriptable Objects/DiscordBridge/ApiConfig.asset
+/Assets/Scriptable Objects/DiscordBridge/ApiConfig.asset.meta
