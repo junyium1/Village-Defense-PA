@@ -12,11 +12,21 @@ namespace Menus
         public GameObject mainMenuPanel;
         public GameObject optionsMenuPanel;
         public GameObject levelMenuPanel;
-    
+
+        [Header("Menu 3D")]
+        [Tooltip("Si coché, les panels 2D (main/options/level) restent fermés : le menu 3D prend le relais.")]
+        public bool useMenu3D = false;
+
         // ----------------------- main menu -----------------------
         void Start()
         {
             levelMenuPanel.SetActive(false);
+            if (useMenu3D)
+            {
+                mainMenuPanel.SetActive(false);
+                optionsMenuPanel.SetActive(false);
+                return;
+            }
             mainMenuPanel.SetActive(true);
             if (OpenLevelSelectOnStart)
             {
