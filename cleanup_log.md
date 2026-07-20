@@ -163,3 +163,21 @@ Format : Fichier / Ligne / Action.
 - `Image_1` (metallic-roughness glTF : G=rough, B=metal) NON appliqué (packing ≠ masque URP R=metal/A=smooth). Si besoin de variation de surface : générer un masque URP repacké. Apport visuel faible en low-poly.
 - Décor rocheux (`Image_x.001`) non texturé (matériaux `MM_Dirt`/décor encore unis) — proposer une passe si voulu.
 - Lisibilité des textes TMP (Niveaux/Réinitialiser) un peu faible sur bois sombre → à revoir avec l'éclairage coucher de soleil.
+
+## 2026-07-20 — T-11 étape 2/2 : contenu du menu options (réglages + persistance)
+
+- **`Assets/Resources/MainMixer.mixer`** — *(créé, YAML édité à la main — tolérance AGENTS.md asset, plan validé)* AudioMixer `Master` › `Music` + `SFX`, paramètres exposés `MusicVolume`/`SfxVolume` (guid→m_Volume des groupes). Format : docs `!u!241/243/244/245` (AudioMixerController/GroupController/EffectController Attenuation/SnapshotController). ⚠️ Création groupes+params NON scriptable en Unity 6 (API publique absente) → d'où le YAML manuel. Doublon accidentel `Assets/NewAudioMixer 1.mixer` supprimé (créé par moi via menu Create, jamais utilisé).
+- **`Assets/Scripts/Menus/SettingsStore.cs`** — *(créé)* statique, PlayerPrefs (`settings.musicOn/musicVol/sfxOn/sfxVol/quality`), `ApplyAll()` public, event `Changed`, dB = `20*Log10(v)` (0 → −80).
+- **`Assets/Scripts/Menus/SettingsApplier.cs`** — *(créé)* ⚠️ **PIÈGE MIXER** : le snapshot par défaut est appliqué par le moteur audio **APRÈS** les `RuntimeInitializeOnLoadMethod` (même AfterSceneLoad) → SetFloat immédiat écrasé. Boot différé (0,05 s + 0,3 s) via `WaitForSecondsRealtime`, puis s'auto-détruit. ⚠️ Test MCP : Play gelé sans focus (frame=1) → `Application.runInBackground=true` en Play pour dégeler.
+- **`Assets/Scripts/Menus/SignOptionToggle.cs`** — *(réécrit)* toggle générique (`Setting { MusicOn, SfxOn }`) via SettingsStore. Champ `onVolume` supprimé (valeur sérialisée scène ignorée sans erreur), `label`/`labelFormat` conservés → câblage scène intact.
+- **`Assets/Scripts/Menus/SignOptionCycle.cs`** — *(créé)* clic = palier suivant (wrap) ; volumes 0/25/50/75/100 %, qualité = noms `QualitySettings`.
+- **`ProjectSettings/QualitySettings.asset`** — *(modifié)* ⚠️ **PIÈGE QUALITÉ** : `QualitySettings.names` est **filtré par plateforme** — `Mobile` excluait Standalone → 1 seul niveau (« PC ») sur PC, cycle inutilisable. Retiré `excludedTargetPlatforms: [- Standalone]` du niveau Mobile → names=[Mobile, PC]. Défaut Standalone inchangé (PC, index 1).
+- **`Assets/Scenes/MainMenuScene.unity`** — *(modifié via MCP, sauvegardé)* pancarte `ChainedSign_Root` : 4 planches clonées de `Plank_Music` (`Plank_MusicVol`, `Plank_Sfx`, `Plank_SfxVol`, `Plank_Quality`) + `Plank_Back` descendu en bas de pile ; positions **provisoires** empilées sous le board (translation monde — pivots cuits, jamais de set local) → **l'utilisateur replace**. AudioSource `MusicManager/MenuMusicSource` routée → groupe **Music** (⚠️ ce GO scène N'EST PAS une instance du prefab `MusicManager.prefab` malgré le nom — routing direct scène requis).
+- **`Assets/Prefabs/Menus/MusicManager.prefab`** — *(modifié via API)* AudioSource → groupe Music (cohérence, même si l'instance scène est indépendante).
+- **`Assets/Scenes/GameScene.unity`** — *(modifié via MCP additif, sauvegardé)* 2 AudioSources de `PlacementSystem` → groupe **SFX**.
+- **Vérifié en Play** : mixer −2,5 dB (75 %) au lancement via SettingsApplier ; toggles → −80 dB live ; cycles volumes + qualité PC⇄Mobile ; PlayerPrefs persistés après relancement ; labels runtime corrects ; bousculade + pancarte OK ; 0 erreur console. Captures `t11_options_planches.png` / `t11_options_final.png` (gitignorées).
+
+### À FAIRE — attention
+- Positions des 6 planches options = **provisoires** (pile sous le board) → placement final par l'utilisateur (comme les niveaux).
+- Convention audio : toute **nouvelle** AudioSource SFX doit être routée vers le groupe `MainMixer/SFX` (sinon elle sort sur Master = non affectée par le réglage Effets — reste audible, pas de régression, mais réglage sans effet sur elle).
+- Le toggle legacy 2D `MusicVolumeController` (panel options 2D hors flux) n'est PAS branché sur SettingsStore (volontairement — hors scope ; si le panel 2D est réactivé un jour, le brancher).
