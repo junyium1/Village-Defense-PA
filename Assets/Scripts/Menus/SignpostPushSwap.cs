@@ -17,6 +17,8 @@ namespace Menus
     /// poser le composant à la main sur le GO Menu3D pour régler les paramètres.
     /// Convention d'angles (axe X monde) : négatif = vers la caméra (+z) pour le
     /// pendule / vers l'arrière (−z) pour la chute. dt plafonné 0.05.
+    /// Mode « pendule solo » (menu pause) : si le signpost cible est null (SetTargets),
+    /// seule la pancarte fait son pendule — aucun titre ne tombe/se relève.
     /// </summary>
     public class SignpostPushSwap : MonoBehaviour
     {
@@ -48,6 +50,11 @@ namespace Menus
         public float riseDuration = 0.5f;
         [Tooltip("Délai avant que le titre commence à se relever.")]
         public float riseDelay = 0.08f;
+
+        [Header("Divers")]
+        [Tooltip("Temps non-scalé : OBLIGATOIRE en menu pause (timeScale = 0).\n" +
+                 "Laisser faux dans le menu principal.")]
+        public bool useUnscaledTime = false;
 
         /// <summary>Vrai pendant la chorégraphie : l'input (hover + clic) est gelé.</summary>
         public static bool IsBusy { get; private set; }
@@ -83,6 +90,14 @@ namespace Menus
                 _signpostColliders = _signpost.GetComponentsInChildren<BoxCollider>(true);
             }
             if (_options != null) { _homeOptPos = _options.localPosition; _homeOptRot = _options.localRotation; }
+            ComputePivots();
+        }
+
+        /// <summary>Recalcule les pivots monde (swing/fall) sur les bounds actuels.
+        /// Requis si les racines ont été DÉPLACÉES depuis le SetTargets
+        /// (menu pause : la racine est repositionnée devant la caméra à chaque ouverture).</summary>
+        public void RefreshPivots()
+        {
             ComputePivots();
         }
 
@@ -131,7 +146,7 @@ namespace Menus
         /// <summary>Aller vers les Options : pendule entrant + chute du titre. Gère lui-même les SetActive.</summary>
         public void SwingIn(System.Action onDone)
         {
-            if (_signpost == null || _options == null || !isActiveAndEnabled)
+            if (_options == null || !isActiveAndEnabled)  // _signpost null = pendule solo (menu pause)
             {
                 if (onDone != null) onDone();
                 return;
@@ -149,7 +164,7 @@ namespace Menus
         /// <summary>Retour au menu principal : pancarte remportée + titre relevé. Gère lui-même les SetActive.</summary>
         public void SwingOut(System.Action onDone)
         {
-            if (_signpost == null || _options == null || !isActiveAndEnabled)
+            if (_options == null || !isActiveAndEnabled)  // _signpost null = pendule solo (menu pause)
             {
                 if (onDone != null) onDone();
                 return;
@@ -180,10 +195,10 @@ namespace Menus
             float t = 0f;
             while (t < half1)
             {
-                float dt = Mathf.Min(Time.deltaTime, 0.05f);
+                float dt = Dt();
                 t += dt;
                 float a = Mathf.Lerp(swingStartDeg, 0f, EaseInQuad(Mathf.Clamp01(t / half1)));
-                if (!fallStarted && a >= -contactLeadDeg)
+                if (!fallStarted && _signpost != null && a >= -contactLeadDeg)
                 {
                     fallStarted = true;
                     StartCoroutine(FallRoutine());
@@ -191,7 +206,7 @@ namespace Menus
                 ApplySwing(a);
                 yield return null;
             }
-            if (!fallStarted)
+            if (!fallStarted && _signpost != null)
             {
                 fallStarted = true;
                 StartCoroutine(FallRoutine());
@@ -201,7 +216,7 @@ namespace Menus
             t = 0f;
             while (t < half2)
             {
-                float dt = Mathf.Min(Time.deltaTime, 0.05f);
+                float dt = Dt();
                 t += dt;
                 ApplySwing(Mathf.Lerp(0f, swingOvershootDeg, EaseOutQuad(Mathf.Clamp01(t / half2))));
                 yield return null;
@@ -214,7 +229,7 @@ namespace Menus
             float decay = 4f / dur;              // amplitude résiduelle ~2 %
             while (t < swingSettleDuration)
             {
-                float dt = Mathf.Min(Time.deltaTime, 0.05f);
+                float dt = Dt();
                 t += dt;
                 ApplySwing(swingOvershootDeg * Mathf.Exp(-decay * t) * Mathf.Cos(omega * t));
                 yield return null;
@@ -235,24 +250,24 @@ namespace Menus
             IsBusy = true;
 
             // Le titre est censé être couché (fin de SwingIn) : on le réactive tel quel.
-            _signpost.gameObject.SetActive(true);
+            if (_signpost != null) _signpost.gameObject.SetActive(true);
 
             // La pancarte est remportée vers la caméra (accélérée) ; le titre se relève juste après.
             bool riseStarted = false;
             float t = 0f;
             while (t < swingOutDuration)
             {
-                float dt = Mathf.Min(Time.deltaTime, 0.05f);
+                float dt = Dt();
                 t += dt;
                 ApplySwing(Mathf.Lerp(0f, swingStartDeg, EaseInQuad(Mathf.Clamp01(t / swingOutDuration))));
-                if (!riseStarted && t >= riseDelay)
+                if (!riseStarted && _signpost != null && t >= riseDelay)
                 {
                     riseStarted = true;
                     StartCoroutine(RiseRoutine());
                 }
                 yield return null;
             }
-            if (!riseStarted) StartCoroutine(RiseRoutine());
+            if (!riseStarted && _signpost != null) StartCoroutine(RiseRoutine());
             while (!_riseDone) yield return null;
 
             // États finaux exacts : titre debout et de nouveau cliquable.
@@ -279,7 +294,7 @@ namespace Menus
             float t = 0f;
             while (t < fallDuration)
             {
-                float dt = Mathf.Min(Time.deltaTime, 0.05f);
+                float dt = Dt();
                 t += dt;
                 ApplyFall(Mathf.Lerp(0f, -fallAngleDeg, EaseInCubic(Mathf.Clamp01(t / fallDuration))));
                 yield return null;
@@ -287,7 +302,7 @@ namespace Menus
             t = 0f;
             while (t < fallBounceDuration)
             {
-                float dt = Mathf.Min(Time.deltaTime, 0.05f);
+                float dt = Dt();
                 t += dt;
                 float lift = fallBounceDeg * Mathf.Sin(Mathf.PI * Mathf.Clamp01(t / fallBounceDuration));
                 ApplyFall(-fallAngleDeg + lift);
@@ -305,7 +320,7 @@ namespace Menus
             float t = 0f;
             while (t < riseDuration)
             {
-                float dt = Mathf.Min(Time.deltaTime, 0.05f);
+                float dt = Dt();
                 t += dt;
                 ApplyFall(Mathf.Lerp(start, 0f, EaseOutBack(Mathf.Clamp01(t / riseDuration))));
                 yield return null;
@@ -326,6 +341,12 @@ namespace Menus
             if (_signpost == null) return;
             _signpost.RotateAround(_fallPivot, Vector3.right, angle - _angleSignpost);
             _angleSignpost = angle;
+        }
+
+        // dt plafonné 0.05 ; unscaled en menu pause (timeScale = 0).
+        float Dt()
+        {
+            return Mathf.Min(useUnscaledTime ? Time.unscaledDeltaTime : Time.deltaTime, 0.05f);
         }
 
         // États finaux appliqués d'office si une navigation arrive pendant la chorégraphie.

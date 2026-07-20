@@ -25,6 +25,12 @@ namespace Menus
         {
             if (cam == null || Mouse.current == null) return;
 
+            // Les pancartes sont déplacées par script pendant la pause (timeScale = 0).
+            // Sans step physique et avec Physics.autoSyncTransforms = false, les colliders
+            // restent à leur ancienne position -> le raycast raterait les planches (il
+            // testerait un fantôme resté près de l'origine). On resynchronise avant le tir.
+            Physics.SyncTransforms();
+
             Ray ray = cam.ScreenPointToRay(Mouse.current.position.ReadValue());
             RaycastHit hit;
             bool hasHit = Physics.Raycast(ray, out hit, maxRayDistance) && !SignpostRotator.IsBusy && !SignpostPushSwap.IsBusy;

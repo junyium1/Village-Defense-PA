@@ -4,7 +4,7 @@
     "unityMCP": {
       "type": "local",
       "command": [
-        "C:\\Users\\yanis\\AppData\\Local\\Programs\\Python\\Python311\\Scripts\\uvx.exe",
+        "C:\\Users\\yanis\\.local\\bin\\uvx.exe",
         "--from",
         "mcpforunityserver==10.1.0",
         "mcp-for-unity",

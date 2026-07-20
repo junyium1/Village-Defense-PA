@@ -18,6 +18,9 @@ namespace Menus
         [SerializeField] float speed = 10f;
         [SerializeField] Color glowColor = Color.white;
         [SerializeField, Range(0f, 1f)] float glowStrength = 0.6f;
+        [Tooltip("Temps non-scalé : OBLIGATOIRE en menu pause (timeScale = 0).\n" +
+                 "Laisser faux dans le menu principal.")]
+        [SerializeField] bool useUnscaledTime = false;
 
         static readonly int BaseColorId = Shader.PropertyToID("_BaseColor");
         static readonly int ColorId = Shader.PropertyToID("_Color");
@@ -70,7 +73,7 @@ namespace Menus
         {
             while (Mathf.Abs(_k - target) > 0.001f)
             {
-                float dt = Mathf.Min(Time.deltaTime, 0.05f);
+                float dt = Mathf.Min(useUnscaledTime ? Time.unscaledDeltaTime : Time.deltaTime, 0.05f);
                 _k = Mathf.MoveTowards(_k, target, dt * speed);
                 Apply();
                 yield return null;

@@ -9,7 +9,11 @@ namespace Menus
         public GameObject pauseMenuPanel;
         private bool _isPaused;
         public GameManager gameManager;
-    
+
+        [Tooltip("Menu pause 3D (pancarte). Si câblé, il remplace le panel 2D\n" +
+                 "(le panel reste en secours quand le 3D est absent).")]
+        public PauseMenu3DController pauseMenu3D;
+
         private void Start()
         {
             pauseMenuPanel.SetActive(false);
@@ -33,14 +37,16 @@ namespace Menus
 
         public void Resume()
         {
-            pauseMenuPanel.SetActive(false);
+            if (pauseMenu3D != null) pauseMenu3D.Hide();
+            else pauseMenuPanel.SetActive(false);
             gameManager.ResumeGame();
             _isPaused = false;
         }
 
         private void Pause()
         {
-            pauseMenuPanel.SetActive(true);
+            if (pauseMenu3D != null) pauseMenu3D.Show();
+            else pauseMenuPanel.SetActive(true);
             gameManager.PauseGame();
             _isPaused = true;
         }

@@ -40,6 +40,15 @@ public class CameraSystem : MonoBehaviour
     
     private void Update()
     {
+        // Pause / game over (timeScale = 0) : caméra totalement figée.
+        // La rotation molette et le zoom lisent l'input souris BRUT (sans
+        // Time.deltaTime), donc sans ce garde ils continueraient pendant la pause.
+        if (Time.timeScale == 0f)
+        {
+            enableMouseRotation = false; // évite un saut de rotation à la reprise
+            return;
+        }
+
         HandleTopDownView();
         HandleCameraMovement();
         HandleCameraRotation();
