@@ -6,7 +6,8 @@ namespace Menus
     /// <summary>
     /// Raycast central du menu 3D : survol (hover) + clic sur les planches.
     /// New Input System (Mouse.current) — les messages OnMouse* hérités ne marchent pas.
-    /// Input gelé pendant une pirouette (<see cref="SignpostRotator.IsBusy"/>).
+    /// Input gelé pendant une transition (<see cref="SignpostRotator.IsBusy"/>,
+    /// <see cref="SignpostPushSwap.IsBusy"/>).
     /// </summary>
     public class Menu3DInput : MonoBehaviour
     {
@@ -26,7 +27,7 @@ namespace Menus
 
             Ray ray = cam.ScreenPointToRay(Mouse.current.position.ReadValue());
             RaycastHit hit;
-            bool hasHit = Physics.Raycast(ray, out hit, maxRayDistance) && !SignpostRotator.IsBusy;
+            bool hasHit = Physics.Raycast(ray, out hit, maxRayDistance) && !SignpostRotator.IsBusy && !SignpostPushSwap.IsBusy;
 
             SignPlankHover hov = hasHit ? hit.collider.GetComponentInParent<SignPlankHover>() : null;
             if (hov != _hovered)

@@ -5,7 +5,8 @@ namespace Menus
     /// <summary>
     /// Navigation du menu principal 3D : panneau titre (signpost) /
     /// sélection de niveau / options. Un seul panneau actif à la fois.
-    /// Les changements passent par une pirouette (<see cref="SignpostRotator"/>) si présente,
+    /// Options ⇄ Menu principal = transition dédiée « bousculade » (<see cref="SignpostPushSwap"/>),
+    /// les autres changements passent par une pirouette (<see cref="SignpostRotator"/>) si présente,
     /// sinon swap instantané. Wipe/Quit relayés au <see cref="StartMenuManager"/> existant.
     /// </summary>
     public class Menu3DController : MonoBehaviour
@@ -19,6 +20,9 @@ namespace Menus
         [SerializeField] SignpostRotator rotator;
         [SerializeField] GameObject levelPage1;
         [SerializeField] GameObject levelPage2;
+        [Tooltip("Transition dédiée Options ⇄ Menu principal (pendule + chute).\n" +
+                 "Optionnel : auto-ajouté et auto-câblé à l'Awake si absent.")]
+        [SerializeField] SignpostPushSwap pushSwap;
 
         SignLevelPlank[] _levelPlanks = new SignLevelPlank[0];
         GameObject _current;
@@ -34,6 +38,13 @@ namespace Menus
             Instance = this;
             if (levelSelectRoot != null)
                 _levelPlanks = levelSelectRoot.GetComponentsInChildren<SignLevelPlank>(true);
+
+            // Transition « bousculade » Options ⇄ Main : auto-câblage, aucune modif de scène requise.
+            if (pushSwap == null) pushSwap = GetComponent<SignpostPushSwap>();
+            if (pushSwap == null) pushSwap = gameObject.AddComponent<SignpostPushSwap>();
+            pushSwap.SetTargets(
+                signpostRoot != null ? signpostRoot.transform : null,
+                optionsRoot != null ? optionsRoot.transform : null);
         }
 
         void Start()
@@ -60,10 +71,28 @@ namespace Menus
         {
             if (target == null || _current == target) return;
 
+            // Transition « bousculade » dédiée : Options ⇄ Menu principal uniquement.
+            // Le SignpostPushSwap gère lui-même l'activation/désactivation des panneaux.
+            if (pushSwap != null && _current != null && Application.isPlaying)
+            {
+                if (target == optionsRoot && _current == signpostRoot)
+                {
+                    pushSwap.SwingIn(() => { _current = target; if (after != null) after(); });
+                    return;
+                }
+                if (target == signpostRoot && _current == optionsRoot)
+                {
+                    pushSwap.SwingOut(() => { _current = target; if (after != null) after(); });
+                    return;
+                }
+            }
+
             System.Action swap = () =>
             {
                 SetActivePanels(target);
                 _current = target;
+                // Garde-fou : le signpost ne doit jamais réapparaître « couché » via la pirouette.
+                if (pushSwap != null && target == signpostRoot) pushSwap.SnapHomeSignpost();
                 if (after != null) after();
             };
 

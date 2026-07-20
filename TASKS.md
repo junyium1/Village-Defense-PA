@@ -133,6 +133,39 @@
 
 ---
 
+## T-11 [~] (en cours) : Menu 3D — élaboration du menu réglages (pancarte enchaînée)
+**Zone :** `MainMenuScene` via MCP + scripts `Assets/Scripts/Menus/`. **Dépend de T-10.**
+**Contexte :** Le panneau options = `ChainedSign_Root` (pancarte enchaînée : `Board`, `ChainL`, `ChainR`, `TMP_TitleOpt` « Options »), co-localisé sous `FlipPivot`, inactif au repos, swappé par pirouette. Demande utilisateur 2026-07-20 : élaborer le contenu du menu réglages.
+**Étape 1/2 — transition dédiée « bousculade » : ✅ CODÉ (2026-07-20, à tester en Play).** Choix utilisateur : la pancarte options arrive **en pendule** (pas de balayage latéral) et percute le titre qui **tombe en arrière** ; retour = miroir. `SignpostPushSwap.cs` (nouveau, **auto-câblé** par `Menu3DController.Awake` → zéro modif de scène, zéro MCP) : pendule pivot = haut des chaînes (bounds max Y), chute pivot = base poteau (bounds min Y), contact décalé de `contactLeadDeg` (anti-chevauchement), oscillation amortie, chute ease-in + rebond, relèvement easeOutBack. Poses restaurées exactement (pas de dérive). `IsBusy` static gèle l'input (`Menu3DInput` gaté sur les 2 busies). Pirouette conservée pour Niveaux ; garde-fou `SnapHomeSignpost()` si le titre est réaffiché via pirouette. Réglage fin au ressenti Play : poser le composant à la main sur le GO `Menu3D` pour tweaker les angles/durées (publics). **⚠️ À vérifier en Play : pendule ne clippe pas la caméra (sinon baisser `swingStartDeg`).**
+**Étape 2/2 — contenu des options : À FAIRE** (specs ci-dessous : planches réglages + persistance).
+**Existant (vérifié) :**
+- `SignOptionToggle.cs` : planche toggle Musique ON/OFF via `AudioListener.volume` (0 / 0.5), label TMP « Musique : ON|OFF » — **aucune persistance** (réglage perdu au relancement).
+- `MusicVolumeController.cs` : legacy UI 2D (Toggle+Slider) avec `// TODO implement saving settings` et `// TODO handle different audio sources (music VS SFX)` — non réutilisé en 3D.
+- Anim « drop » de la pancarte (chaînes) : **jamais implémentée** (la spec T-10 la mentionnait, la pirouette seule a été faite).
+**Specs :**
+- **Plan-avant-code obligatoire** : définir avec l'utilisateur la liste des réglages exposés (candidats : Musique ON/OFF — déjà codé, volume musique, volume SFX — TODO legacy, qualité, plein écran…) et la persistance (PlayerPrefs via clés dédiées).
+- Une planche par réglage sur la pancarte enchaînée : TMP 3D (règles T-08 : rotation Y=180°, `localScale = 1/lossyScale`), `BoxCollider` refit sur `mesh.bounds`, `SignPlankHover` (glow), `SignOptionToggle` / nouveau(s) script(s) dédiés.
+- Persistance des réglages au clic + relecture à l'ouverture de scène.
+- Anim « drop » (descente Y + rebond léger, coroutine, dt plafonné 0.05) à l'affichage de la pancarte — si validée dans le plan.
+- Retour : planche dédiée → `Menu3DController.ShowMain()` (pirouette) ; `StartMenuManager.CloseOptions()` reste la référence logique.
+- ⚠️ Pièges : edits scène MCP **hors Play** uniquement ; `Collider.bounds` lit (0,0,0) en mode Édition après refit (cache PhysX — donnée fiable = `size` locale) ; caméra X=377.95 à ne pas toucher ; hover glow via `_BaseColor`/`_EmissionColor`.
+**Acceptance :** En Play : clic « Options » → pirouette → pancarte affichée (drop si retenu) ; chaque réglage fonctionne, persiste après relancement, et se relit correctement ; retour menu principal OK ; 0 erreur console.
+
+---
+
+## T-12 (ready) : Menu 3D — cel shading + éclairage sunset (assigné OpenCode)
+**Zone :** `Assets/Shaders/` (fichiers neufs) + `Assets/Art/MainMenu/Materials/` + rig lumières de `MainMenuScene` (via prefab `MenuLighting` + une insertion scène unique).
+**Contexte :** Demande utilisateur 2026-07-20 : OpenCode prend les shaders/lights du menu pendant que Claude Code continue le reste. **Cohabitation : zones de fichiers disjointes** (OpenCode = shaders/matériaux/lights menu ; Claude = le reste) ; touches scène en créneaux courts ou par prefab ; coordination via ce fichier + `.claude_memory.md`. **Plan détaillé à revalider avec l'utilisateur au démarrage du ticket.**
+**Specs (proposition) :**
+- Shader toon URP (Shader Graph + Custom Function HLSL wrappant `GetMainLight()`/`GetAdditionalLight()`) : NdotL quantifié 2-3 paliers (`smoothstep` serrés), rim light fresnel, ambiant SH teinté. Propriétés **obligatoires** : `_BaseMap`, `_BumpMap`, `_BaseColor`, `_EmissionColor` (compat hover glow `SignPlankHover` via MaterialPropertyBlock).
+- Matériaux `MM_*Toon` dupliqués (originaux `MM_*` conservés), swap par assignation scène directe (méthode éprouvée T-07), créneau scène court.
+- Éclairage sunset : Directional chaude angle bas ~15°, 2-3 spots d'accent sur le signpost via **Light Layers** (le décor fait 760 objets), brouillard léger + skybox teintée. Lights d'accent **quantifiées** dans la boucle additional lights du shader (sinon elles cassent l'effet).
+- Pas d'outline mesh (inverted-hull déjà écarté — `PlankOutline.shader` inutilisé) ; contour = rim/fresnel.
+- ⚠️ Vérifier le hover glow après swap des matériaux ; attention lisibilité TMP crème sur bois sombre éclairé sunset.
+**Acceptance :** Rendu cel shading cohérent sur tout le menu (décor + signpost), hover glow fonctionnel, TMP lisibles, captures MCP validées par l'utilisateur, 0 régression nav/hover/pirouette.
+
+---
+
 ## Notes pour OpenCode
 Écris ici si un ticket est ambigu ou touche une zone interdite. Ne bloque pas la file — passe au suivant.
 
