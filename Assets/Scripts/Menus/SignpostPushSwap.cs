@@ -10,6 +10,8 @@ namespace Menus
     /// (pivot = base du poteau, chute ease-in + rebond), puis la pancarte se
     /// stabilise à la verticale par oscillation amortie. Retour = miroir
     /// (pancarte remportée vers la caméra, titre qui se relève avec ressort).
+    /// Le titre RESTE VISIBLE, couché au sol derrière la pancarte (ses colliders
+    /// sont désactivés tant qu'il est à terre pour bloquer hover/clic).
     /// Pas de collisions réelles : simple chorégraphie temporisée.
     /// Auto-câblé par <see cref="Menu3DController"/> (aucune modif de scène requise) ;
     /// poser le composant à la main sur le GO Menu3D pour régler les paramètres.
@@ -67,13 +69,19 @@ namespace Menus
         float _angleSignpost;   // angle courant appliqué au titre (0 = debout, −fall = couché)
         bool _fallDone = true;
         bool _riseDone = true;
+        BoxCollider[] _signpostColliders = new BoxCollider[0]; // désactivés tant que le titre est au sol
 
         /// <summary>Câble les racines des deux panneaux (appelé par Menu3DController à l'Awake).</summary>
         public void SetTargets(Transform signpostRoot, Transform optionsRoot)
         {
             _signpost = signpostRoot;
             _options = optionsRoot;
-            if (_signpost != null) { _homeSignPos = _signpost.localPosition; _homeSignRot = _signpost.localRotation; }
+            if (_signpost != null)
+            {
+                _homeSignPos = _signpost.localPosition;
+                _homeSignRot = _signpost.localRotation;
+                _signpostColliders = _signpost.GetComponentsInChildren<BoxCollider>(true);
+            }
             if (_options != null) { _homeOptPos = _options.localPosition; _homeOptRot = _options.localRotation; }
             ComputePivots();
         }
@@ -212,10 +220,11 @@ namespace Menus
                 yield return null;
             }
 
-            // Pose finale exacte, puis le titre couché sort de scène.
+            // Pose finale exacte. Le titre RESTE visible, couché au sol derrière
+            // la pancarte — ses colliders sont coupés pour bloquer hover/clic.
             SnapHomeOptions();
             while (!_fallDone) yield return null;
-            _signpost.gameObject.SetActive(false);
+            SetSignpostInteractable(false);
 
             IsBusy = false;
             if (onDone != null) onDone();
@@ -246,13 +255,21 @@ namespace Menus
             if (!riseStarted) StartCoroutine(RiseRoutine());
             while (!_riseDone) yield return null;
 
-            // États finaux exacts.
+            // États finaux exacts : titre debout et de nouveau cliquable.
             SnapHomeOptions();
             _options.gameObject.SetActive(false);
             SnapHomeSignpost();
+            SetSignpostInteractable(true);
 
             IsBusy = false;
             if (onDone != null) onDone();
+        }
+
+        // Le titre couché reste visible mais ne doit plus répondre au raycast (hover/clic).
+        void SetSignpostInteractable(bool on)
+        {
+            for (int i = 0; i < _signpostColliders.Length; i++)
+                if (_signpostColliders[i] != null) _signpostColliders[i].enabled = on;
         }
 
         // Chute du titre en arrière : ease-in (gravité) puis rebond léger au sol.
@@ -319,9 +336,10 @@ namespace Menus
             if (_options != null) _options.gameObject.SetActive(true);
             if (_signpost != null)
             {
+                _signpost.gameObject.SetActive(true);
                 SnapHomeSignpost();
                 ApplyFall(-fallAngleDeg);
-                _signpost.gameObject.SetActive(false);
+                SetSignpostInteractable(false);
             }
             _fallDone = true;
             _riseDone = true;
@@ -335,6 +353,7 @@ namespace Menus
             {
                 _signpost.gameObject.SetActive(true);
                 SnapHomeSignpost();
+                SetSignpostInteractable(true);
             }
             if (_options != null)
             {
