@@ -19,6 +19,14 @@ namespace Menus
         void Awake()
         {
             if (cam == null) cam = Camera.main;
+
+            // Garde-fou anti-fuite d'état statique entre scènes : un LoadScene peut
+            // interrompre une coroutine SwingIn/SwingOut/Flip (ex. « Menu principal »
+            // cliqué dans la pause) avant qu'elle ne remette IsBusy à false. Ces flags
+            // étant statiques, ils survivraient au changement de scène et gèleraient
+            // hover + clic ici (boutons du menu titre injouables). On repart propre.
+            SignpostRotator.ResetBusy();
+            SignpostPushSwap.ResetBusy();
         }
 
         void Update()

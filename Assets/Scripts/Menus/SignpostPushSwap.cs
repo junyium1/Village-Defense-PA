@@ -59,6 +59,13 @@ namespace Menus
         /// <summary>Vrai pendant la chorégraphie : l'input (hover + clic) est gelé.</summary>
         public static bool IsBusy { get; private set; }
 
+        /// <summary>Réinitialise l'état statique « occupé ». À appeler au chargement d'une
+        /// scène de menu : un LoadScene peut tuer une coroutine SwingIn/SwingOut en cours
+        /// (ex. « Menu principal » cliqué depuis la pause) avant qu'elle ne remette IsBusy
+        /// à false. Le flag étant statique, il survivrait au changement de scène et gèlerait
+        /// tout hover/clic dans la scène suivante (planches du menu titre injouables).</summary>
+        public static void ResetBusy() => IsBusy = false;
+
         Transform _signpost;    // Signpost_Root (tombe / se relève)
         Transform _options;     // ChainedSign_Root (pendule)
 

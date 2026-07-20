@@ -181,3 +181,31 @@ Format : Fichier / Ligne / Action.
 - Positions des 6 planches options = **provisoires** (pile sous le board) → placement final par l'utilisateur (comme les niveaux).
 - Convention audio : toute **nouvelle** AudioSource SFX doit être routée vers le groupe `MainMixer/SFX` (sinon elle sort sur Master = non affectée par le réglage Effets — reste audible, pas de régression, mais réglage sans effet sur elle).
 - Le toggle legacy 2D `MusicVolumeController` (panel options 2D hors flux) n'est PAS branché sur SettingsStore (volontairement — hors scope ; si le panel 2D est réactivé un jour, le brancher).
+
+## 2026-07-20 — Fix fuite IsBusy statique (pause → menu titre injouable)
+
+- **`Assets/Scripts/Menus/SignpostPushSwap.cs` + `SignpostRotator.cs`** — *(modifiés)* ajout `public static void ResetBusy() => IsBusy = false;`.
+- **`Assets/Scripts/Menus/Menu3DInput.cs`** — *(modifié)* `Awake()` appelle `SignpostRotator.ResetBusy()` + `SignpostPushSwap.ResetBusy()`. Cause : `QuitToMainMenu` lançait `SwingOut` (IsBusy=true + coroutine) PUIS `LoadScene` synchrone → coroutine tuée avant `IsBusy=false` → flag statique survivait → `Menu3DInput` gelait hover/clic dans le menu titre. 3 fichiers, 0 modif scène.
+
+## 2026-07-20 — T-12 : cel shading (BotW/TotK) + éclairage sunset du menu titre (Claude/MCP)
+
+⚠️ **T-12 était « assigné OpenCode » dans la memory → réassigné à Claude sur demande explicite de l'utilisateur.** Périmètre : **MainMenuScene seule**, outline **PC uniquement** (Mobile = cel sans outline).
+
+- **`Assets/Settings/MM_MenuVolume.asset`** — *(créé)* VolumeProfile post-process : Bloom (tint chaud), Tonemapping Neutral, ColorAdjustments (chaud, contraste), WhiteBalance (+12 temp), Vignette.
+- **`Assets/Art/MainMenu/MM_SunsetSky.mat`** — *(créé)* Skybox/Procedural réglé golden-hour (atmosphere 1.15, exposure 1.2).
+- **`Assets/Settings/PC_RPAsset.asset`** — *(modifié)* `m_SupportsHDR=true` (bloom propre).
+- **`Assets/Scenes/MainMenuScene.unity`** — *(modifié, sauvegardé)* Directional Light `Directional Light` réglée sunset (rot 17,320 / couleur 1,0.84,0.62 / I=1.45 ; **anciennes valeurs : rot 50,330 / 1,0.957,0.839 / I=1**). Fog ON (ExponentialSquared, chaud 0.93,0.84,0.70, densité 0.0085 ; **avant : OFF**). Skybox → MM_SunsetSky, ambient 1.2. GO `Global Volume (Menu)` (profil MM_MenuVolume). Main Camera : `renderPostProcessing=true` + volumeLayerMask Everything (**transform INTOUCHÉE**, X=377.95 préservé). 421 renderers décor réassignés aux matériaux cel (voir ci-dessous).
+- **`Assets/Art/MainMenu/Shaders/MM_CelLit.shader`** — *(créé)* URP HLSL, 4 passes (ForwardLit cel + ShadowCaster + DepthOnly + **DepthNormals** requis pour l'outline). Diffus bandé (`_Steps`), rim light chaud, `_BaseMap`/`_BaseColor`/`_BumpMap`/`_EmissionColor` (**hover `SignPlankHover` intact**), SH ambient. Main light seule (menu = 1 directionnelle).
+- **`Assets/Art/MainMenu/Materials/MM_{Wood,Bark,Leaves,Dirt,Iron,Chain}.mat`** — *(modifiés)* shader → MM/CelLit (couleurs/textures préservées ; MM_Wood garde `_NORMALMAP`).
+- **`Assets/Art/MainMenu/Materials/Decor/MM_{Grass,DecorWood,Bush}.mat`** — *(créés)* extraits du FBX puis convertis cel. ⚠️ **PIÈGE** : `AssetDatabase.ExtractAsset` sur un FBX + scène DÉPACKÉE = refs bakées cassées (421 slots null). Récup : retirer les remaps FBX (revient embarqué, refs restaurées) puis **réassigner in-scene par nom** (Material.001→MM_Grass ×418, Wood→MM_DecorWood ×2, Material.002→MM_Bush ×1). Les 3 matériaux embarqués du FBX restent (inutilisés).
+- **`Assets/Art/MainMenu/Shaders/MM_OutlineFullscreen.shader`** — *(créé)* edge-detection plein écran (Roberts cross profondeur relative + normales), tunables `_OutlineColor/_OutlineThickness/_DepthThreshold/_NormalThreshold/_OutlineOpacity`. ⚠️ include Blit = `com.unity.render-pipelines.core/Runtime/Utilities/Blit.hlsl` (URP 17, PAS le chemin universal).
+- **`Assets/Settings/MM_Outline.mat`** — *(créé)* matériau outline (normalThreshold 1.5 / depthThreshold 0.10 / thickness 1.1 / opacity 0.9 — réglés pour ne garder que les silhouettes, pas les facettes du sol).
+- **`Assets/Settings/PC_Renderer.asset`** — *(modifié)* + `FullScreenPassRendererFeature` « MM_Outline » (injection AfterRenderingPostProcessing, requirements Depth|Normal). ⚠️ **PIÈGE** : ajouter à `m_RendererFeatures` par code laisse `m_RendererFeatureMap` désync (URP ignore la feature) → reconstruire la map (localFileId de chaque feature via `TryGetGUIDAndLocalFileIdentifier`).
+- **Vérifié en Play** : sunset + cel + outline OK, UI 2D (Inventaire/Discord/Mana) non-outlinée (overlay au-dessus), titre affiché par le controller, hover glow rend à travers le cel shader. Captures `Assets/Screenshots/mm_*.png` (gitignorées).
+
+### À FAIRE — attention
+- **`PlankOutline.shader`** (inverted-hull, déjà inutilisé) reste sans usage — l'outline est désormais le post-process plein écran.
+- Résidu faible : quelques lignes de facettes au sol en distance moyenne (acceptable, stylisé). Monter `_NormalThreshold` si l'utilisateur veut un sol plus lisse.
+- **Test souris réel** (hover/clic sur planches sous le nouveau rendu) à faire par l'utilisateur.
+- Mobile : outline absent (choix), cel shading présent ; HDR non forcé sur Mobile_RPAsset (bloom plus faible).
+- UI 2D `StartMenuCanvas` (Inventaire/Discord/ManaHUD) non restylée (hors scope cel — sprites peints) ; proposer une passe si voulu.

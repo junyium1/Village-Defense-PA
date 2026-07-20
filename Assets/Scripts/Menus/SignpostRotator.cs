@@ -16,6 +16,10 @@ namespace Menus
         /// <summary>Vrai pendant une pirouette : l'input (hover + clic) est gelé.</summary>
         public static bool IsBusy { get; private set; }
 
+        /// <summary>Réinitialise l'état statique « occupé » (garde-fou au chargement de scène :
+        /// une coroutine tuée par un LoadScene laisserait IsBusy bloqué et gèlerait l'input).</summary>
+        public static void ResetBusy() => IsBusy = false;
+
         /// <summary>Lance la pirouette ; <paramref name="swapAtEdge"/> est appelé à la tranche (contenu invisible).</summary>
         public void Flip(System.Action swapAtEdge)
         {
