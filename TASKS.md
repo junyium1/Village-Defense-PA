@@ -55,13 +55,14 @@
 
 ---
 
-## T-05 (blocked — MCP à valider après restart) : Mise au propre de l'affichage de tous les menus
+## T-05 [~] (en cours) : Mise au propre de l'affichage de tous les menus
 **Zone :** Unity UI — toutes scènes (directive utilisateur 2026-07-19, session 2)
 **Contexte :** L'utilisateur veut une passe déco/propreté globale sur les menus du jeu.
 **Inventaire à faire via MCP :** `MainMenuScene` (StartMenuCanvas, LinkAccountScreen_Panel, InventoryScreen_Panel, ManaHUD, boutons) + `GameScene` (pause menu, HUD) + autres scènes éventuelles.
 **Specs :** Plan-avant-code obligatoire (lister étapes + fichiers/scènes impactés, attendre validation). Pièges connus : alpha 1.0 strict fonds opaques, coroutines dt ≤ 0.05s, accents TMP (vérifier glyphes), panels plein écran opaques en dernier sibling.
 **Acceptance :** Tous les menus cohérents visuellement (palette, boutons arrondis, animations), vérifiés en Play, 0 erreur console.
 > **Note (session 3) :** le **menu principal 3D « signpost »** est sorti en tickets dédiés **T-06 → T-10** (séquencés, dépendants). T-05 = reste des menus 2D (inventaire / discord / pause).
+> **Avancement (2026-07-21, session OpenCode) :** Phase 2 faite — MainMenuScene : LevelMenuPanel désactivé, ManaHUD_BG créé (fond sombre), LinkAccountScreen_Panel + InventoryScreen_Panel désactivés (à activer au besoin). GameScene : PauseMenu stylisé (fond très sombre, boutons violet foncé), CurrencyDisplay avec fond violet sombre. Static batching activé sur 1035 renderers (Phase 3). Reste : test souris réel, positions fines des boutons.
 
 ---
 
