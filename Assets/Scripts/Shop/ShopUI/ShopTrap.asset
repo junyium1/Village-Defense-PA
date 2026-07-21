@@ -17,7 +17,8 @@ MonoBehaviour:
   description: Attention je mords
   goldCost: 300
   crystalCost: 0
-  prefab: {fileID: 0}
+  prefab: {fileID: 7818129557130110890, guid: 134209c9b0dfac34fb716615e037a370, type: 3}
+  placementSize: {x: 1, y: 1}
   upgrades:
   - description: 
     crystalCost: 0

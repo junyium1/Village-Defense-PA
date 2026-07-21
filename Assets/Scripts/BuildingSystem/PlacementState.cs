@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 public class PlacementState : IBuildingState
@@ -12,6 +13,12 @@ public class PlacementState : IBuildingState
     ObjectPlacer objectPlacer;
     AudioSource placementSound;
     Vector2Int gridSize;
+
+    private GameObject directPrefab;
+    private Vector2Int directSize;
+    private bool useDirectMode;
+
+    public event Action OnPlaced;
 
     public PlacementState(int id, 
         Grid grid, 
@@ -46,6 +53,27 @@ public class PlacementState : IBuildingState
         }
     }
 
+    public PlacementState(GameObject prefab, Vector2Int size,
+        Grid grid,
+        PreviewSystem previewSystem,
+        GridData buildingData,
+        ObjectPlacer objectPlacer,
+        AudioSource placementSound,
+        Vector2Int gridSize)
+    {
+        useDirectMode = true;
+        directPrefab = prefab;
+        directSize = size;
+        this.grid = grid;
+        this.previewSystem = previewSystem;
+        this.buildingData = buildingData;
+        this.objectPlacer = objectPlacer;
+        this.placementSound = placementSound;
+        this.gridSize = gridSize;
+
+        previewSystem.StartShowingPlacementPreview(prefab, size);
+    }
+
     public void EndState()
     {
         previewSystem.StopShowingPlacementPreview();
@@ -53,30 +81,41 @@ public class PlacementState : IBuildingState
 
     public void OnAction(Vector3Int gridPosition)
     {
-        Vector2Int buildingSize = database.buildingsData[selectedBuildingIndex].Size;
+        Vector2Int buildingSize = useDirectMode ? directSize : database.buildingsData[selectedBuildingIndex].Size;
+        GameObject prefab = useDirectMode ? directPrefab : database.buildingsData[selectedBuildingIndex].Prefab;
         
-        bool validPlacement = CheckPlacementValidity(gridPosition, selectedBuildingIndex) && 
+        bool validPlacement = CheckPlacementValidity(gridPosition) && 
                               IsBuildingWithinGrid(gridPosition, buildingSize);
 
         if (!validPlacement) return;
         
         placementSound.Play();
-        int index = objectPlacer.PlaceObject(database.buildingsData[selectedBuildingIndex].Prefab, 
+        int index = objectPlacer.PlaceObject(prefab, 
             grid.CellToWorld(gridPosition));
         
-        GridData selectedData = database.buildingsData[selectedBuildingIndex].ID == 0 ?
-            floorData :
-            buildingData;
-        selectedData.AddBuilding(gridPosition, 
-            database.buildingsData[selectedBuildingIndex].Size, 
-            database.buildingsData[selectedBuildingIndex].ID,
-            index);
-        
-        
+        if (useDirectMode)
+        {
+            buildingData.AddBuilding(gridPosition, buildingSize, 1, index);
+        }
+        else
+        {
+            GridData selectedData = database.buildingsData[selectedBuildingIndex].ID == 0 ?
+                floorData :
+                buildingData;
+            selectedData.AddBuilding(gridPosition, 
+                database.buildingsData[selectedBuildingIndex].Size, 
+                database.buildingsData[selectedBuildingIndex].ID,
+                index);
+        }
+
+        OnPlaced?.Invoke();
     }
     
-    private bool CheckPlacementValidity(Vector3Int gridPosition, int selectedBuildingIndex)
+    private bool CheckPlacementValidity(Vector3Int gridPosition)
     {
+        if (useDirectMode)
+            return buildingData.CanPlaceBuilding(gridPosition, directSize);
+
         GridData selectedData = database.buildingsData[selectedBuildingIndex].ID == 0 ?
             floorData :
             buildingData;
@@ -94,8 +133,8 @@ public class PlacementState : IBuildingState
 
     public void UpdateState(Vector3Int gridPosition)
     {
-        Vector2Int buildingSize = database.buildingsData[selectedBuildingIndex].Size;
-        bool validPlacement = CheckPlacementValidity(gridPosition, selectedBuildingIndex) &&
+        Vector2Int buildingSize = useDirectMode ? directSize : database.buildingsData[selectedBuildingIndex].Size;
+        bool validPlacement = CheckPlacementValidity(gridPosition) &&
                               IsBuildingWithinGrid(gridPosition, buildingSize);
         previewSystem.UpdatePosition(grid.CellToWorld(gridPosition), validPlacement);
     }

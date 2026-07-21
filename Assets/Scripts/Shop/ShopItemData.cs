@@ -28,6 +28,7 @@ namespace Shop
         public int goldCost;
         public int crystalCost;
         public GameObject prefab;
+        public Vector2Int placementSize = Vector2Int.one;
 
         // 1 = bronze border / 2 = silver border / 3 - gold border
         public UpgradeLevel[] upgrades = new UpgradeLevel[3];

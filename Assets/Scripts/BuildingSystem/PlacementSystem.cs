@@ -1,4 +1,5 @@
 using UnityEngine;
+using System;
 using System.Collections.Generic;
 
 public class PlacementSystem : MonoBehaviour
@@ -22,6 +23,9 @@ public class PlacementSystem : MonoBehaviour
     [SerializeField] private ObjectPlacer objectPlacer;
     
     IBuildingState buildingState;
+
+    public event Action OnPlacementComplete;
+    public event Action OnPlacementCancelled;
     
     private void Start()
     {
@@ -48,6 +52,35 @@ public class PlacementSystem : MonoBehaviour
         inputManager.OnExit += StopPlacement;
     }
 
+    public void StartPlacement(GameObject prefab, Vector2Int size)
+    {
+        StopPlacement();
+        gridVisualization.SetActive(true);
+
+        var state = new PlacementState(prefab, size,
+            grid,
+            preview,
+            buildingsData,
+            objectPlacer,
+            placementSound,
+            gridSize);
+
+        // Mode continu : l'état reste actif après chaque pose pour enchaîner sans
+        // recliquer sur l'item. Chaque pose est facturée par PlacementManager, qui
+        // stoppe le mode dès que l'or ne suffit plus pour la suivante.
+        state.OnPlaced += () => OnPlacementComplete?.Invoke();
+        buildingState = state;
+
+        inputManager.OnClicked += PlaceStructure;
+        inputManager.OnExit += CancelPlacement;
+    }
+
+    private void CancelPlacement()
+    {
+        StopPlacement();
+        OnPlacementCancelled?.Invoke();
+    }
+
     public void StartRemoving()
     {
         StopPlacement();
@@ -71,12 +104,15 @@ public class PlacementSystem : MonoBehaviour
     }
 
     
-    private void StopPlacement()
+    public bool IsPlacing => buildingState != null;
+
+    public void StopPlacement()
     {
         gridVisualization.SetActive(false);
         buildingState?.EndState();
         inputManager.OnClicked -= PlaceStructure;
         inputManager.OnExit -= StopPlacement;
+        inputManager.OnExit -= CancelPlacement;
         lastDetectedPosition = Vector3Int.zero;
         buildingState = null;
     }

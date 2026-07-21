@@ -7,8 +7,8 @@ namespace Game
     {
         public static Player Instance { get; private set; }
 
-        [Header("Currencies")] public int gold = 30; // buy haha
-        public int crystals = 20; // upgrade
+        [Header("Currencies")] public int gold = 1000; // buy haha
+        public int crystals = 500; // upgrade
 
         private int HighestUnlockedLevel { get; set; } = 0;
 
@@ -67,6 +67,13 @@ namespace Game
                     if (int.TryParse(part, out int id))
                         _completedLevels.Add(id);
             }
+        }
+
+        // Triche (console ²) : débloque tout jusqu'au boss final (même cap que MarkLevelCompleted).
+        public void UnlockAllLevels()
+        {
+            HighestUnlockedLevel = 7;
+            SaveProgress();
         }
 
         public void ResetProgress()

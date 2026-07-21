@@ -21988,7 +21988,7 @@ RectTransform:
   m_LocalScale: {x: 1, y: 1, z: 0}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 1316117955}
+  m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
@@ -22010,6 +22010,7 @@ MonoBehaviour:
   hoverScale: 1.05
   pressedScale: 0.96
   animDuration: 0.08
+  targetTransform: {fileID: 0}
 --- !u!114 &369432479
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -33244,8 +33245,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 24766e59600d459094d594b1d8330c2f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Game.Player
-  gold: 18
-  crystals: 19
+  gold: 1000
+  crystals: 500
 --- !u!1 &559036405
 GameObject:
   m_ObjectHideFlags: 0
@@ -74465,6 +74466,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cf35bbcf58344824b7b323b0f4e5f502, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Game.PlacementManager
+  placementSystem: {fileID: 1927561251}
 --- !u!114 &1294040695
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -112065,10 +112067,8 @@ RectTransform:
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children:
-  - {fileID: 985584677}
-  - {fileID: 18199706}
-  m_Father: {fileID: 1316117955}
+  m_Children: []
+  m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
@@ -112087,8 +112087,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d9d69971283bd254e92a29d8ead6d0bd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CurrencyDisplay
-  goldText: {fileID: 1687312382}
-  crystalText: {fileID: 1109938603}
+  goldText: {fileID: 0}
+  crystalText: {fileID: 0}
 --- !u!114 &1969311438
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -126078,3 +126078,5 @@ SceneRoots:
   - {fileID: 1712754885}
   - {fileID: 1466533667}
   - {fileID: 95300173}
+  - {fileID: 369432476}
+  - {fileID: 1969311436}
