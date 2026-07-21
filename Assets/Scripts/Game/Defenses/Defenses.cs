@@ -12,7 +12,6 @@ namespace Game.Defenses
         public abstract class DefenseData : ScriptableObject
         {
             public string displayName;
-            public int cost;
             public float maxHp;
             public GameObject prefab;
             // TODO for Ana / Yanis to implement during fluff time lol
