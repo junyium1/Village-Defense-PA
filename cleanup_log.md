@@ -209,3 +209,14 @@ Format : Fichier / Ligne / Action.
 - **Test souris réel** (hover/clic sur planches sous le nouveau rendu) à faire par l'utilisateur.
 - Mobile : outline absent (choix), cel shading présent ; HDR non forcé sur Mobile_RPAsset (bloom plus faible).
 - UI 2D `StartMenuCanvas` (Inventaire/Discord/ManaHUD) non restylée (hors scope cel — sprites peints) ; proposer une passe si voulu.
+
+## 2026-07-21 — Bascule setup multi-agent OpenCode (Qwen Max chef + Qwen Plus assistant), retrait ancien système
+
+Contexte : passage au duo natif OpenCode (agent `build` = Qwen3.7 Max = chef, subagent `assistant` = Qwen3.7 Plus) via `opencode.json`. L'ancien système de délégation par sous-processus (kimi-k3) et le prompt Claude Code deviennent obsolètes. Suppressions **validées par l'utilisateur** (2026-07-21).
+
+- **`scripts/delegate.ps1`** — *(SUPPRIMÉ)* Ancien script de délégation `opencode run --model opencode-go/kimi-k3`. Remplacé par les subagents natifs OpenCode (outil `task` : chef → assistant). Jamais utilisé par l'utilisateur.
+- **`.claude/commands/delegate.md`** — *(SUPPRIMÉ)* Slash-command `/delegate` associé au script ci-dessus. Obsolète.
+- **`CLAUDE.md`** — *(SUPPRIMÉ)* Prompt Claude Code (routage périmé Haiku/Sonnet/Opus, délégation vers OpenCode Go). Lu uniquement par Claude Code (ignoré par OpenCode quand `AGENTS.md` existe). L'utilisateur n'utilise plus Claude Code sur ce projet. Toutes les règles anti-régression utiles sont déjà dans `AGENTS.md`.
+- **`SKILL.md`** — *(SUPPRIMÉ)* Fichier vide (0 octet), sans usage.
+- **`.claude/settings.json`** — *(modifié)* Retrait de la permission `Bash(pwsh -File ./scripts/delegate.ps1:*)` (script supprimé).
+- **`.mcp.json`** — *(à réviser)* Config MCP au format Claude Code (`mcpServers`), désormais inutile côté OpenCode (qui lit `opencode.json`). Conservé pour l'instant (n'interfère pas). À retirer si Claude Code est définitivement abandonné.

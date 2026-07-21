@@ -7,13 +7,18 @@ Shader "MM/CelLit"
         [Normal] _BumpMap ("Normal Map", 2D) = "bump" {}
         _BumpScale ("Normal Scale", Float) = 1
         [HDR] _EmissionColor ("Emission", Color) = (0,0,0,1)
-        _Steps ("Shading Steps", Range(1,6)) = 3
-        _ShadeTint ("Shadow Tint", Color) = (0.45,0.40,0.50,1)
-        _ShadeStrength ("Shadow Strength", Range(0,1)) = 1
+        _Steps ("Shading Steps", Range(1,16)) = 12
+        _ShadeTint ("Shadow Tint", Color) = (0.50,0.42,0.55,1)
+        _ShadeStrength ("Shadow Strength", Range(0,1)) = 0.85
+        _ShadowSoftness ("Shadow Softness", Range(0,1)) = 0.75
         _RimColor ("Rim Color", Color) = (1,0.82,0.55,1)
-        _RimPower ("Rim Power", Range(0.5,10)) = 3
-        _RimStrength ("Rim Strength", Range(0,2)) = 0.6
+        _RimPower ("Rim Power", Range(0.5,10)) = 2.5
+        _RimStrength ("Rim Strength", Range(0,2)) = 0.4
+        _RimSoftness ("Rim Softness", Range(0,1)) = 0.5
         _AmbientStrength ("Ambient Fill", Range(0,1.5)) = 0.6
+        _SpecularColor ("Specular Color", Color) = (1,0.95,0.85,1)
+        _SpecularPower ("Specular Power", Range(1,128)) = 48
+        _SpecularStrength ("Specular Strength", Range(0,1)) = 0.3
         _Cutoff ("Alpha Cutoff", Range(0,1)) = 0.5
         [Toggle(_ALPHATEST_ON)] _AlphaClip ("Alpha Clip", Float) = 0
         [Toggle(_NORMALMAP)] _UseNormalMap ("Use Normal Map", Float) = 0
@@ -33,11 +38,16 @@ Shader "MM/CelLit"
             half4 _EmissionColor;
             half4 _ShadeTint;
             half4 _RimColor;
+            half4 _SpecularColor;
             half _Steps;
             half _ShadeStrength;
+            half _ShadowSoftness;
             half _RimPower;
             half _RimStrength;
+            half _RimSoftness;
             half _AmbientStrength;
+            half _SpecularPower;
+            half _SpecularStrength;
             half _BumpScale;
             half _Cutoff;
         CBUFFER_END
@@ -112,28 +122,41 @@ Shader "MM/CelLit"
                 half NdotL = dot(N, mainLight.direction);
                 half atten = mainLight.shadowAttenuation * mainLight.distanceAttenuation;
 
-                // Diffus BANDE (posterisation du terminateur)
                 half diff = saturate(NdotL) * atten;
-                half steps = max(1.0h, _Steps);
-                half banded = ceil(diff * steps) / steps;
-                banded = lerp(banded, diff, 0.12h);
+                half steps = max(2.0h, _Steps);
+                half stepSize = 1.0h / steps;
+                // Genshin-style soft cel: blend between bands with wide smoothstep
+                half scaledDiff = diff * steps;
+                half bandIndex = floor(scaledDiff);
+                half bandFrac = frac(scaledDiff);
+                half softWidth = _ShadowSoftness * 0.8h; // wide transition zone
+                half smoothEdge = smoothstep(0.5h - softWidth, 0.5h + softWidth, bandFrac);
+                half banded = saturate((bandIndex + smoothEdge) * stepSize);
+                // Add subtle gradient within each band for less flat look
+                half innerGradient = lerp(0.95h, 1.0h, bandFrac * 0.3h);
+                banded *= innerGradient;
 
                 half3 litColor = albedo.rgb * mainLight.color;
                 half3 shadeColor = albedo.rgb * lerp(half3(1,1,1), _ShadeTint.rgb, _ShadeStrength);
                 half3 diffuse = lerp(shadeColor, litColor, banded);
 
-                // Remplissage ambiant (SH) pour que l'ombre ne soit pas noire
                 half3 ambient = SampleSH(N) * albedo.rgb * _AmbientStrength;
 
                 half3 color = diffuse + ambient;
 
-                // Rim light (fresnel) cote lumiere
-                half rim = 1.0h - saturate(dot(V, N));
-                rim = pow(rim, _RimPower);
-                rim *= _RimStrength * saturate(NdotL * 0.5h + 0.5h);
-                color += _RimColor.rgb * rim;
+                half3 H = normalize(mainLight.direction + V);
+                half NdotH = saturate(dot(N, H));
+                half spec = pow(NdotH, _SpecularPower) * atten;
+                // Genshin-style soft specular: smoothstep for wider, softer highlight
+                half specSoft = smoothstep(0.5h, 1.0h, spec * 2.0h);
+                color += _SpecularColor.rgb * specSoft * _SpecularStrength;
 
-                // Emission (glow hover via MaterialPropertyBlock)
+                half rim = 1.0h - saturate(dot(V, N));
+                half rimMask = smoothstep(1.0h - _RimSoftness, 1.0h, rim);
+                rimMask *= pow(rim, _RimPower);
+                rimMask *= _RimStrength * saturate(NdotL * 0.5h + 0.5h);
+                color += _RimColor.rgb * rimMask;
+
                 color += _EmissionColor.rgb;
 
                 color = MixFog(color, IN.fogFactor);

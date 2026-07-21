@@ -1,7 +1,6 @@
 {
   "permissions": {
     "allow": [
-      "Bash(pwsh -File ./scripts/delegate.ps1:*)",
       "Bash(opencode models:*)",
       "Bash(git diff:*)",
       "Bash(git status:*)"

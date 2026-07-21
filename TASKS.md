@@ -1,4 +1,4 @@
-# TASKS.md — Tickets du projet (mode solo OpenCode Go)
+# TASKS.md — Tickets du projet (duo OpenCode : CHEF Qwen Max / ASSISTANT Qwen Plus)
 
 **Convention :**
 - `[ ]` à faire · `[x]` fait · `[~]` en cours
