@@ -2632,6 +2632,7 @@ GameObject:
   - component: {fileID: 221775239}
   - component: {fileID: 221775238}
   - component: {fileID: 221775237}
+  - component: {fileID: 221775241}
   m_Layer: 5
   m_Name: InventoryHitbox
   m_TagString: Untagged
@@ -2655,8 +2656,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 0, y: 33}
-  m_SizeDelta: {x: 150, y: 150}
+  m_AnchoredPosition: {x: 45.920593, y: -47.1523}
+  m_SizeDelta: {x: 498.1614, y: 152.8633}
   m_Pivot: {x: 0, y: 1}
 --- !u!114 &221775237
 MonoBehaviour:
@@ -2729,7 +2730,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 0, g: 0, b: 1, a: 0.15}
+  m_Color: {r: 0, g: 0, b: 1, a: 0}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -2754,6 +2755,22 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 221775235}
   m_CullTransparentMesh: 1
+--- !u!114 &221775241
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 221775235}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b2b808cf09226d84f96f8379e13312a7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DiscordBridge.UI.UIButtonFX
+  hoverScale: 1.05
+  pressedScale: 0.96
+  animDuration: 0.08
+  targetTransform: {fileID: 602100295}
 --- !u!1 &223343772
 GameObject:
   m_ObjectHideFlags: 0
@@ -4001,6 +4018,7 @@ MonoBehaviour:
   hoverScale: 1.05
   pressedScale: 0.96
   animDuration: 0.08
+  targetTransform: {fileID: 0}
 --- !u!1 &330506732
 GameObject:
   m_ObjectHideFlags: 0
@@ -4558,6 +4576,7 @@ MonoBehaviour:
   hoverScale: 1.05
   pressedScale: 0.96
   animDuration: 0.08
+  targetTransform: {fileID: 0}
 --- !u!1 &412530191
 GameObject:
   m_ObjectHideFlags: 0
@@ -7851,6 +7870,7 @@ MonoBehaviour:
   hoverScale: 1.05
   pressedScale: 0.96
   animDuration: 0.08
+  targetTransform: {fileID: 0}
 --- !u!1 &767385666
 GameObject:
   m_ObjectHideFlags: 0
@@ -8994,6 +9014,7 @@ GameObject:
   - component: {fileID: 828759522}
   - component: {fileID: 828759521}
   - component: {fileID: 828759520}
+  - component: {fileID: 828759524}
   m_Layer: 5
   m_Name: DiscordHitbox
   m_TagString: Untagged
@@ -9017,8 +9038,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 224, y: -190}
-  m_SizeDelta: {x: 150, y: 150}
+  m_AnchoredPosition: {x: 88.74298, y: -207.53339}
+  m_SizeDelta: {x: 428.0283, y: 135.8063}
   m_Pivot: {x: 0, y: 1}
 --- !u!114 &828759520
 MonoBehaviour:
@@ -9091,7 +9112,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 0, b: 0, a: 0.15}
+  m_Color: {r: 1, g: 0, b: 0, a: 0}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -9116,6 +9137,22 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 828759518}
   m_CullTransparentMesh: 1
+--- !u!114 &828759524
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 828759518}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b2b808cf09226d84f96f8379e13312a7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DiscordBridge.UI.UIButtonFX
+  hoverScale: 1.05
+  pressedScale: 0.96
+  animDuration: 0.08
+  targetTransform: {fileID: 2000590333}
 --- !u!1 &842914878
 GameObject:
   m_ObjectHideFlags: 0
@@ -10404,6 +10441,7 @@ MonoBehaviour:
   hoverScale: 1.05
   pressedScale: 0.96
   animDuration: 0.08
+  targetTransform: {fileID: 0}
 --- !u!1 &1012779989
 GameObject:
   m_ObjectHideFlags: 0
@@ -15614,8 +15652,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0.5}
   m_AnchorMax: {x: 0, y: 0.5}
-  m_AnchoredPosition: {x: 14.299988, y: -12.799999}
-  m_SizeDelta: {x: 634, y: 394}
+  m_AnchoredPosition: {x: -8.3595, y: -51}
+  m_SizeDelta: {x: 328.3595, y: 207.6615}
   m_Pivot: {x: 0, y: 0.5}
 --- !u!114 &1550856878
 MonoBehaviour:
@@ -17470,7 +17508,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &1789422924
 Transform:
   m_ObjectHideFlags: 0
@@ -17830,6 +17868,7 @@ MonoBehaviour:
   hoverScale: 1.05
   pressedScale: 0.96
   animDuration: 0.08
+  targetTransform: {fileID: 0}
 --- !u!1 &1832755213
 GameObject:
   m_ObjectHideFlags: 0
@@ -19076,6 +19115,7 @@ MonoBehaviour:
   hoverScale: 1.05
   pressedScale: 0.96
   animDuration: 0.08
+  targetTransform: {fileID: 0}
 --- !u!1 &1926346068
 GameObject:
   m_ObjectHideFlags: 0

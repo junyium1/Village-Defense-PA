@@ -11,21 +11,26 @@ namespace DiscordBridge.UI
         [SerializeField] float hoverScale = 1.05f;
         [SerializeField] float pressedScale = 0.96f;
         [SerializeField] float animDuration = 0.08f;
+        [SerializeField] Transform targetTransform;
 
+        Transform _target;
         Vector3 _baseScale;
         Coroutine _running;
         bool _hovered;
         bool _pressed;
 
-        void Awake() => _baseScale = transform.localScale;
+        void Awake()
+        {
+            _target = targetTransform != null ? targetTransform : transform;
+            _baseScale = _target.localScale;
+        }
 
         void OnDisable()
         {
-            // Un objet désactivé ne reçoit plus PointerExit : on remet tout à zéro.
             _hovered = false;
             _pressed = false;
             _running = null;
-            transform.localScale = _baseScale;
+            if (_target != null) _target.localScale = _baseScale;
         }
 
         public void OnPointerEnter(PointerEventData eventData) { _hovered = true; AnimateToCurrent(); }
@@ -44,14 +49,14 @@ namespace DiscordBridge.UI
 
         IEnumerator AnimateScale(Vector3 target)
         {
-            Vector3 from = transform.localScale;
+            Vector3 from = _target.localScale;
             for (float t = 0f; t < animDuration; t += Mathf.Min(Time.unscaledDeltaTime, 0.05f))
             {
-                transform.localScale = Vector3.Lerp(from, target, t / animDuration);
+                _target.localScale = Vector3.Lerp(from, target, t / animDuration);
                 yield return null;
             }
 
-            transform.localScale = target;
+            _target.localScale = target;
             _running = null;
         }
     }
