@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Game;
+using Game.Defenses;
 using UnityEngine;
 
 namespace Shop
@@ -7,6 +8,10 @@ namespace Shop
     public class ShopManager : MonoBehaviour
     {
         public GameObject shopMenuPanel;
+        public GameObject shopUnitsAndDefenses;
+        public GameObject shopUnits;
+        public GameObject shopDefenses;
+        public GameObject itemDetails;
         private bool _isActive;
         public GameManager gameManager;
         public static ShopManager Instance { get; private set; }
@@ -27,37 +32,14 @@ namespace Shop
         // -------------- panel show / hide --------------
         private void Start()
         {
-            shopMenuPanel.SetActive(false);
-        }
-
-        private void Update()
-        {
-            if (gameManager.currentPhase != GamePhase.Placement)
-            {
-                CloseShopMenu();
-                return;
-            }
-
-            if (Input.GetKeyDown(KeyCode.P))
-            {
-                if (_isActive)
-                    CloseShopMenu();
-                else
-                    OpenShopMenu();
-            }
-        }
-
-        private void OpenShopMenu()
-        {
-            _isActive = true;
             shopMenuPanel.SetActive(true);
+            shopUnitsAndDefenses.SetActive(true);
+            shopUnits.SetActive(false);
+            shopDefenses.SetActive(false);
+            itemDetails.SetActive(false);
+            
         }
-
-        public void CloseShopMenu()
-        {
-            _isActive = false;
-            shopMenuPanel.SetActive(false);
-        }
+        
 
         // -------------- capitalism --------------
         public bool TryBuy(ShopItemData item)
