@@ -15,7 +15,9 @@ public class InputManager : MonoBehaviour
 
     private void Update()
     {
-        if (Input.GetMouseButtonDown(0))
+        // Garde pause : timeScale = 0 (menu pause) -> aucun placement au clic,
+        // le clic appartient au menu (avant : seul le raycast UI 2D le bloquait).
+        if (Input.GetMouseButtonDown(0) && Time.timeScale > 0f)
         {
             OnClicked?.Invoke();
         }
