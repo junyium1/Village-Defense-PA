@@ -1,0 +1,54 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "model": "opencode-go/qwen3.7-max",
+  "mcp": {
+    "unityMCP": {
+      "type": "local",
+      "command": [
+        "C:\\Users\\yanis\\.local\\bin\\uvx.exe",
+        "--from",
+        "mcpforunityserver==10.1.0",
+        "mcp-for-unity",
+        "--transport",
+        "stdio"
+      ],
+      "enabled": true
+    }
+  },
+  "agent": {
+    "build": {
+      "model": "opencode-go/qwen3.7-max",
+      "prompt": "Tu es le CHEF de projet et l'unique interlocuteur. Applique STRICTEMENT AGENTS.md. Tu gardes pour toi : pilotage Unity (outils unityMCP_*), architecture, logique critique (DiscordBridge, HMAC, typage discord_id), scenes/prefabs/meta, mise a jour de .claude_memory.md. Pour toute tache MECANIQUE et deja specifiee (boilerplate C#, DTOs, backend Python simple, doc, tests, renommage, analyse de logs), delegue a l'agent 'assistant' via l'outil task plutot que de la faire toi-meme, afin de preserver le quota Max. Apres CHAQUE delegation : git diff --stat, et si un fichier interdit apparait -> git checkout immediat + signalement. Ne delegue JAMAIS : MCP Unity, scenes/prefabs/meta, HMAC, typage discord_id, .claude_memory.md.",
+      "permission": {
+        "edit": "allow",
+        "bash": "allow",
+        "task": {
+          "*": "deny",
+          "assistant": "allow"
+        }
+      },
+      "tools": {
+        "unityMCP_*": true
+      }
+    },
+    "plan": {
+      "model": "opencode-go/qwen3.7-max",
+      "tools": {
+        "unityMCP_*": true
+      }
+    },
+    "assistant": {
+      "mode": "subagent",
+      "model": "opencode-go/qwen3.7-plus",
+      "description": "Executant mecanique : boilerplate C#, DTOs, backend Python, doc, tests, renommage, analyse de logs. AUCUN acces Unity/MCP, scenes, prefabs, HMAC ni .claude_memory.md.",
+      "prompt": "Tu es l'executant. Tu appliques AGENTS.md. Tu realises uniquement des taches precises deja specifiees par le chef. Livre du code 100% complet et compilable, aucun placeholder. Tu n'as PAS acces a Unity/MCP : si une tache exige Unity, une scene, un prefab, la logique HMAC ou .claude_memory.md, refuse et renvoie au chef.",
+      "permission": {
+        "edit": "allow",
+        "bash": "allow"
+      },
+      "tools": {
+        "unityMCP_*": false
+      }
+    }
+  }
+}

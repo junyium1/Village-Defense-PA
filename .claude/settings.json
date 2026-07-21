@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(opencode models:*)",
+      "Bash(git diff:*)",
+      "Bash(git status:*)"
+    ]
+  }
+}
