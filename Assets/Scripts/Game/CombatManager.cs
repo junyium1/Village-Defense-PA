@@ -32,6 +32,7 @@ namespace Game
         public int playerLives = 2;
         public bool waveInProgress = false;
         float _countdown;
+        int _lastDisplayedTime = -1;
         public int GoldEarned { get; private set; }
         public int CrystalsEarned { get; private set; }
 
@@ -68,7 +69,14 @@ namespace Game
             _countdown -= Time.deltaTime;
 
             if (waveTimerText != null)
-                waveTimerText.text = Mathf.Max(0, Mathf.Floor(_countdown)).ToString();
+            {
+                int timeToDisplay = Mathf.Max(0, Mathf.FloorToInt(_countdown));
+                if (timeToDisplay != _lastDisplayedTime)
+                {
+                    waveTimerText.text = timeToDisplay.ToString();
+                    _lastDisplayedTime = timeToDisplay;
+                }
+            }
 
             if (_countdown <= 0f)
                 StartCoroutine(SpawnWave());
