@@ -65,7 +65,8 @@ namespace Menus
             if (_hovered == on) return;
             _hovered = on;
             if (on) EnsureBase();
-            if (_co != null) StopCoroutine(_co);
+            if (_co != null) { StopCoroutine(_co); _co = null; }
+            if (!gameObject.activeInHierarchy) return;
             _co = StartCoroutine(Anim(on ? 1f : 0f));
         }
 
