@@ -7,8 +7,8 @@ namespace Game
     {
         public static Player Instance { get; private set; }
 
-        [Header("Currencies")] public int gold = 67; // buy haha
-        public int crystals = 0; // upgrade
+        [Header("Currencies")] public int gold = 30; // buy haha
+        public int crystals = 20; // upgrade
 
         private int HighestUnlockedLevel { get; set; } = 0;
 
