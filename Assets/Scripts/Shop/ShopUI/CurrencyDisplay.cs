@@ -9,7 +9,8 @@ public class CurrencyDisplay : MonoBehaviour
 
     private void Update()
     {
-        goldText.text = Player.Instance.gold.ToString();
-        crystalText.text = Player.Instance.crystals.ToString();
+        if (Player.Instance == null) return;
+        if (goldText != null) goldText.text = Player.Instance.gold.ToString();
+        if (crystalText != null) crystalText.text = Player.Instance.crystals.ToString();
     }
 }
