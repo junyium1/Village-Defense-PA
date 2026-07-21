@@ -126,3 +126,6 @@ opencode.json
 # Secret local — clé API du bridge Discord (ne JAMAIS committer)
 /Assets/Scriptable Objects/DiscordBridge/ApiConfig.asset
 /Assets/Scriptable Objects/DiscordBridge/ApiConfig.asset.meta
+
+# Données locales du profiler Unity (trop volumineuses pour git)
+/Profiling/
