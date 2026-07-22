@@ -8,6 +8,8 @@ namespace Game
     // TODO implement more phases (story / cutscenes pre-boss fights if any
     public enum GamePhase
     {
+        /// <summary>Le joueur choisit ou poser la zone jouable sur la map.</summary>
+        ZonePlacement,
         Placement,
         Combat,
         Pause
@@ -23,6 +25,13 @@ namespace Game
         private GamePhase _previousPhase; // to store what phase to go back to
         [SerializeField] LevelEndMenuManager levelEndMenuManager;
         [SerializeField] TextMeshProUGUI levelTitle;
+
+        [Header("Zone jouable")]
+        [Tooltip("Laisser vide pour demarrer directement en phase Placement (ancien comportement).")]
+        [SerializeField] LevelZonePlacer zonePlacer;
+
+        [Tooltip("Affiche pendant le choix de l'emplacement (ex: 'Choisis ou installer ton village').")]
+        [SerializeField] GameObject zonePlacementHint;
 
         void Awake()
         {
@@ -43,6 +52,34 @@ namespace Game
         {
             if (levelTitle != null && LevelSelectManager.SelectedLevel != null)
                 levelTitle.text = LevelSelectManager.SelectedLevel.levelName;
+
+            if (zonePlacer != null)
+                EnterZonePlacement();
+            else
+                EnterPlacement();
+        }
+
+        /// <summary>
+        /// Phase 0 : le joueur promene la zone jouable sur la map et valide un
+        /// emplacement. Le placement de defenses n'ouvre qu'apres validation.
+        /// </summary>
+        public void EnterZonePlacement()
+        {
+            currentPhase = GamePhase.ZonePlacement;
+            placementManager.enabled = false;
+            combatManager.enabled = false;
+
+            if (zonePlacementHint != null) zonePlacementHint.SetActive(true);
+
+            zonePlacer.ZoneConfirmed -= OnZoneConfirmed;
+            zonePlacer.ZoneConfirmed += OnZoneConfirmed;
+            zonePlacer.Begin();
+        }
+
+        void OnZoneConfirmed(LevelZone _)
+        {
+            zonePlacer.ZoneConfirmed -= OnZoneConfirmed;
+            if (zonePlacementHint != null) zonePlacementHint.SetActive(false);
             EnterPlacement();
         }
 
@@ -69,6 +106,7 @@ namespace Game
 
             placementManager.enabled = false;
             combatManager.enabled = false;
+            if (zonePlacer != null) zonePlacer.enabled = false;
 
             Time.timeScale = 0f;
         }
@@ -79,6 +117,8 @@ namespace Game
 
             placementManager.enabled = (currentPhase == GamePhase.Placement);
             combatManager.enabled = (currentPhase == GamePhase.Combat);
+            if (zonePlacer != null)
+                zonePlacer.enabled = (currentPhase == GamePhase.ZonePlacement) && zonePlacer.IsActive;
 
             Time.timeScale = 1f;
         }

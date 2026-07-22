@@ -12,7 +12,7 @@ namespace DiscordBridge.UI
         void OnEnable()
         {
             if (_menuInput == null)
-                _menuInput = FindObjectOfType<Menus.Menu3DInput>();
+                _menuInput = FindAnyObjectByType<Menus.Menu3DInput>();
 
             if (_menuInput != null)
                 _menuInput.enabled = false;

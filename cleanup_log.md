@@ -220,3 +220,10 @@ Contexte : passage au duo natif OpenCode (agent `build` = Qwen3.7 Max = chef, su
 - **`SKILL.md`** — *(SUPPRIMÉ)* Fichier vide (0 octet), sans usage.
 - **`.claude/settings.json`** — *(modifié)* Retrait de la permission `Bash(pwsh -File ./scripts/delegate.ps1:*)` (script supprimé).
 - **`.mcp.json`** — *(à réviser)* Config MCP au format Claude Code (`mcpServers`), désormais inutile côté OpenCode (qui lit `opencode.json`). Conservé pour l'instant (n'interfère pas). À retirer si Claude Code est définitivement abandonné.
+
+## 2026-07-22 — Nettoyage grille de placement (GameScene)
+
+- **`Level/Plateformes`** — *(SUPPRIMÉ, 1020 enfants)* Ancien système de grille (Nodes inactifs, parent `activeSelf=false`). Remplacé par `BuildingSystem/GridVisualization` + `GridBlinker`.
+- **`BuildingSurface`** — *(MeshRenderer éteint)* Plan 200×200 `Grass.mat` qui doublonnait visuellement avec `Sol`. MeshCollider conservé pour les raycasts de placement.
+- **`Assets/Scripts/BuildingSystem/GridBlinker.cs`** — *(créé)* Pulse sinusoïdal de l'alpha de la grille via MaterialPropertyBlock (`_Color`), unscaledTime (survit à la pause).
+- **`BuildingSystem/GridVisualization`** — *(activé + GridBlinker attaché)* Grille visible en permanence avec clignotement pendant la partie.

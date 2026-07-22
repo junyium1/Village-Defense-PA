@@ -22,7 +22,20 @@ public class CameraSystem : MonoBehaviour
     [SerializeField] private float targetFieldOfViewMax = 60;
     [SerializeField] private float targetFieldOfViewMin = 10;
     
-    
+    [Tooltip("BoxCollider (trigger) définissant la zone de déplacement de la caméra. Laisser null pour désactiver le clamping.")]
+    [SerializeField] private BoxCollider cameraBounds;
+
+    // Pendant le choix d'emplacement de la zone jouable, la caméra doit pouvoir
+    // survoler toute la map : le clamping est suspendu, pas supprimé.
+    private bool clampEnabled = true;
+
+    /// <summary>Change la boîte de déplacement autorisée (null = libre).</summary>
+    public void SetBounds(BoxCollider bounds) => cameraBounds = bounds;
+
+    /// <summary>Suspend / rétablit le clamping sans perdre la référence à la boîte.</summary>
+    public void SetClampEnabled(bool enabled) => clampEnabled = enabled;
+
+
     private void Awake()
     {
         cameraInput = new CameraInput();
@@ -53,6 +66,7 @@ public class CameraSystem : MonoBehaviour
         HandleCameraMovement();
         HandleCameraRotation();
         HandleCameraZoom();
+        ClampCameraPosition();
     }
 
     private void HandleTopDownView()
@@ -176,5 +190,26 @@ public class CameraSystem : MonoBehaviour
         
         cinemachineCamera.Lens.FieldOfView = 
             Mathf.Lerp(cinemachineCamera.Lens.FieldOfView, targetFieldOfView, zoomSpeed * Time.deltaTime);
+    }
+
+    /// <summary>
+    /// Clample la position de caméra dans le BoxCollider <see cref="cameraBounds"/>.
+    /// Fonctionne quelle que soit la rotation/scale du collider.
+    /// </summary>
+    private void ClampCameraPosition()
+    {
+        if (cameraBounds == null || !clampEnabled) return;
+
+        // Position world → espace local du collider
+        Vector3 localPos = cameraBounds.transform.InverseTransformPoint(transform.position);
+        Vector3 halfSize = cameraBounds.size * 0.5f;
+        Vector3 center = cameraBounds.center;
+
+        // Clamp sur X et Z (Y libre pour la hauteur / zoom)
+        localPos.x = Mathf.Clamp(localPos.x, center.x - halfSize.x, center.x + halfSize.x);
+        localPos.z = Mathf.Clamp(localPos.z, center.z - halfSize.z, center.z + halfSize.z);
+
+        // Retour world
+        transform.position = cameraBounds.transform.TransformPoint(localPos);
     }
 }
