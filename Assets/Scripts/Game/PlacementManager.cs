@@ -50,8 +50,12 @@ namespace Game
         // L'objet vient d'être posé : c'est ICI que l'achat est encaissé.
         // Le mode placement reste actif pour enchaîner les poses ; il ne s'arrête
         // que si l'or ne suffit plus pour la suivante (ou via Échap / changement d'item).
-        private void HandlePlacementComplete()
+        private void HandlePlacementComplete(GameObject placed)
         {
+            // Applique les multiplicateurs d'upgrade (dégâts / PV / vitesse) sur l'instance
+            // fraîchement posée, selon le niveau d'upgrade stocké côté Player.
+            UpgradeStatApplier.Apply(placed, pendingItem);
+
             Player.Instance.SpendGold(pendingItem.goldCost);
             Debug.Log($"{pendingItem.displayName} placé : -{pendingItem.goldCost} or");
 
