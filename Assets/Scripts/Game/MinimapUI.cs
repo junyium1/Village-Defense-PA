@@ -11,6 +11,7 @@ namespace Game
     /// <summary>
     /// Minimap schematique temps reel de la LevelZone.
     /// Rond rouge = ennemi, rond vert = allie, carre vert = batiment (tourelle ou piege).
+    /// En niveau boss (LevelData.isBoss), les ennemis sont de gros ronds violets.
     /// S'auto-instancie dans toute scene contenant une LevelZone (aucun cablage de scene).
     /// Touche M = afficher/masquer.
     /// </summary>
@@ -19,7 +20,7 @@ namespace Game
         // --------------------------------------------------------------- champs serialises
 
         [Tooltip("Taille du panneau de la minimap en pixels (reference 1920x1080).")]
-        [SerializeField] float panelSize = 208f;
+        [SerializeField] float panelSize = 240f;
 
         [Tooltip("Marge bas-gauche du panneau par rapport au coin de l'ecran.")]
         [SerializeField] Vector2 margin = new Vector2(24f, 24f);
@@ -40,13 +41,16 @@ namespace Game
         [SerializeField] Color buildingColor = new Color(0.35f, 0.9f, 0.4f);
 
         [Tooltip("Couleur de fond du panneau.")]
-        [SerializeField] Color backgroundColor = new Color(0f, 0f, 0f, 0.65f);
+        [SerializeField] Color backgroundColor = new Color(0f, 0f, 0f, 0.72f);
 
         [Tooltip("Couleur des lignes de la grille.")]
         [SerializeField] Color gridLineColor = new Color(1f, 1f, 1f, 0.08f);
 
         [Tooltip("Couleur de la bordure du panneau.")]
-        [SerializeField] Color borderColor = new Color(1f, 1f, 1f, 0.3f);
+        [SerializeField] Color borderColor = new Color(0.85f, 0.78f, 0.6f, 0.95f);
+
+        [Tooltip("Couleur des ennemis en niveau boss (LevelData.isBoss).")]
+        [SerializeField] Color bossColor = new Color(0.62f, 0.3f, 0.85f);
 
         // --------------------------------------------------------------- constantes
 
@@ -62,6 +66,9 @@ namespace Game
         float _nextRefresh;
         bool _visible = true;
         bool _built;
+        // Niveau boss (flag sur LevelData, il n'existe pas d'unite "boss" distincte) :
+        // les ennemis sont rendus en gros ronds violets.
+        bool _bossLevel;
         static Sprite _circleSprite;
         static Sprite _gridSprite;
         static Vector2Int _gridCells = new Vector2Int(-1, -1);
@@ -175,6 +182,26 @@ namespace Game
 
             // 5. Visibilite initiale.
             _root.SetActive(_visible);
+
+            // 6. Mode boss fige au build : SelectedLevel survit tant qu'on reste dans la scene.
+            _bossLevel = Menus.LevelSelectManager.SelectedLevel != null
+                         && Menus.LevelSelectManager.SelectedLevel.isBoss;
+
+            // 7. Titre au-dessus du panneau (hors de la carte pour ne pas masquer la grille).
+            GameObject titleGo = new GameObject("Title", typeof(RectTransform));
+            titleGo.transform.SetParent(panel.transform, false);
+            RectTransform titleRt = (RectTransform)titleGo.transform;
+            titleRt.anchorMin = new Vector2(0f, 1f);
+            titleRt.anchorMax = new Vector2(0f, 1f);
+            titleRt.pivot = new Vector2(0f, 1f);
+            titleRt.anchoredPosition = new Vector2(0f, 22f);
+            titleRt.sizeDelta = new Vector2(panelSize, 18f);
+            TMPro.TextMeshProUGUI title = titleGo.AddComponent<TMPro.TextMeshProUGUI>();
+            title.text = "CARTE";
+            title.fontSize = 14f;
+            title.fontStyle = TMPro.FontStyles.Bold;
+            title.color = new Color(0.96f, 0.9f, 0.78f, 1f);
+            title.raycastTarget = false;
         }
 
         // --------------------------------------------------------------- sprites proceduraux
@@ -217,8 +244,8 @@ namespace Game
                     pixels[y * texSize + x] = gridLineColor;
             }
 
-            // Bordure exterieure de 2 px.
-            for (int b = 0; b < 2; b++)
+            // Bordure exterieure de 3 px.
+            for (int b = 0; b < 3; b++)
             {
                 int lo = b;
                 int hi = texSize - 1 - b;
@@ -289,22 +316,25 @@ namespace Game
             // Batiments d'abord (dessous) : carres verts.
             // Une Image sans sprite rend un rectangle plein de la couleur demandee.
             foreach (TurretManager t in TurretManager.All)
-                if (t != null) PlaceIcon(t.transform.position, null, buildingColor);
+                if (t != null) PlaceIcon(t.transform.position, null, buildingColor, iconSize);
             foreach (TrapManager t in TrapManager.All)
-                if (t != null) PlaceIcon(t.transform.position, null, buildingColor);
+                if (t != null) PlaceIcon(t.transform.position, null, buildingColor, iconSize);
 
             // Allies ensuite.
             foreach (Unit u in Unit.All)
             {
                 if (u == null || u.data == null) continue;
-                if (u.GetFaction() == Faction.Ally) PlaceIcon(u.transform.position, GetCircleSprite(), allyColor);
+                if (u.GetFaction() == Faction.Ally) PlaceIcon(u.transform.position, GetCircleSprite(), allyColor, iconSize);
             }
 
             // Ennemis en dernier (au-dessus en cas de superposition).
             foreach (Unit u in Unit.All)
             {
                 if (u == null || u.data == null) continue;
-                if (u.GetFaction() == Faction.Enemy) PlaceIcon(u.transform.position, GetCircleSprite(), enemyColor);
+                if (u.GetFaction() == Faction.Enemy)
+                    PlaceIcon(u.transform.position, GetCircleSprite(),
+                              _bossLevel ? bossColor : enemyColor,
+                              _bossLevel ? iconSize * 1.8f : iconSize);
             }
 
             // Les icones non utilisees ce tick repassent en sommeil.
@@ -315,7 +345,7 @@ namespace Game
         /// <summary>
         /// Place (ou reutilise) une icone a la position monde donnee.
         /// </summary>
-        void PlaceIcon(Vector3 worldPos, Sprite sprite, Color color)
+        void PlaceIcon(Vector3 worldPos, Sprite sprite, Color color, float sizePx)
         {
             Vector3 local = _zone.transform.InverseTransformPoint(worldPos);
             Vector2 size = _zone.WorldSize;
@@ -330,6 +360,9 @@ namespace Game
 
             icon.sprite = sprite;
             icon.color = color;
+            // La taille est reappliquee a chaque placement : une icone reutilisee peut
+            // avoir servi a un ennemi de taille differente (mode boss).
+            icon.rectTransform.sizeDelta = new Vector2(sizePx, sizePx);
             icon.rectTransform.anchoredPosition = new Vector2(nx * panelSize, ny * panelSize);
         }
 
