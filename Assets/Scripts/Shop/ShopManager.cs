@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Game;
 using Game.Defenses;
 using UnityEngine;
@@ -14,6 +15,7 @@ namespace Shop
         private bool _isActive;
         public GameManager gameManager;
         public static ShopManager Instance { get; private set; }
+        readonly Dictionary<ShopItemData, int> _upgradeLevels = new();
 
         // -------------- singleton --------------
         void Awake()
@@ -67,9 +69,8 @@ namespace Shop
             return true;
         }
 
-        // Le niveau d'upgrade est stocké (et persisté) sur le Player.
         public int GetUpgradeLevel(ShopItemData item)
-            => Player.Instance != null ? Player.Instance.GetUpgradeLevel(item) : item.currentUpgradeLevel;
+            => _upgradeLevels.TryGetValue(item, out int level) ? level : 0;
 
         public bool TryUpgrade(ShopItemData item)
         {
@@ -88,7 +89,7 @@ namespace Shop
             }
 
             Player.Instance.SpendCrystals(next.crystalCost);
-            Player.Instance.SetUpgradeLevel(item, currentLevel + 1);
+            _upgradeLevels[item] = currentLevel + 1;
             print($"{item.displayName} upgraded to level {currentLevel + 1}!");
             return true;
         }
@@ -106,12 +107,7 @@ namespace Shop
         float GetMultiplier(ShopItemData item, System.Func<UpgradeLevel, float> selector)
         {
             int level = GetUpgradeLevel(item);
-            if (level <= 0 || item.upgrades == null || item.upgrades.Length == 0)
-                return 1f;
-            // Clamp défensif : un niveau persisté (PlayerPrefs) peut dépasser la taille du
-            // tableau si celui-ci a été réduit après coup.
-            int idx = Mathf.Min(level, item.upgrades.Length) - 1;
-            return selector(item.upgrades[idx]);
+            return level > 0 ? selector(item.upgrades[level - 1]) : 1f;
         }
     }
 }

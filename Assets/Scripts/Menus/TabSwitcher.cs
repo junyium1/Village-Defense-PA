@@ -11,12 +11,14 @@ public class TabSwitcher : MonoBehaviour
         defensesPanel.SetActive(false);
     }
 
+    // appelé par le bouton "Defenses"
     public void ShowDefenses()
     {
         unitsPanel.SetActive(false);
         defensesPanel.SetActive(true);
     }
 
+    // affiche Units par défaut à l'ouverture
     private void OnEnable()
     {
         ShowUnits();

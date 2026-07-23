@@ -35,7 +35,5 @@ namespace Shop
 
         // 1 = bronze border / 2 = silver border / 3 - gold border
         public UpgradeLevel[] upgrades = new UpgradeLevel[3];
-
-        // Niveau de DÉPART (le niveau courant est géré/persisté par Player, pas ici).
     }
 }
