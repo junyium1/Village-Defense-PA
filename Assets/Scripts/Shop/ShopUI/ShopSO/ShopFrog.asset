@@ -20,6 +20,7 @@ MonoBehaviour:
   goldCost: 0
   crystalCost: 0
   prefab: {fileID: 0}
+  placementSize: {x: 1, y: 1}
   upgrades:
   - description: 
     crystalCost: 0

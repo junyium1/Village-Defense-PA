@@ -7,7 +7,7 @@ namespace Menus
     public class StartMenuManager : MonoBehaviour
     {
         public static bool OpenLevelSelectOnStart = false;
-        
+
         [Header("Menus")]
         public GameObject mainMenuPanel;
         public GameObject optionsMenuPanel;
@@ -56,7 +56,7 @@ namespace Menus
         
         public void WipeSave()
         {
-            Player.Instance.ResetProgress();
+            Player.Instance.ResetProgress(); // efface progression + niveaux d'upgrade du shop
             if (LevelSelectManager.Instance != null)
                 LevelSelectManager.Instance.RefreshButtons();
         }

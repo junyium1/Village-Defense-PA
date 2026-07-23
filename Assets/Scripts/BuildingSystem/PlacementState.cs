@@ -18,7 +18,7 @@ public class PlacementState : IBuildingState
     private Vector2Int directSize;
     private bool useDirectMode;
 
-    public event Action OnPlaced;
+    public event Action<GameObject> OnPlaced;
 
     public PlacementState(int id, 
         Grid grid, 
@@ -108,7 +108,7 @@ public class PlacementState : IBuildingState
                 index);
         }
 
-        OnPlaced?.Invoke();
+        OnPlaced?.Invoke(objectPlacer.GetPlacedObject(index));
     }
     
     private bool CheckPlacementValidity(Vector3Int gridPosition)

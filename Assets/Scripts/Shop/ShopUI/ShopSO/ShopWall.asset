@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Shop.TrapShopData
   displayName: Wall
   icon: {fileID: 21300000, guid: e59c06669f692f348afde21f9503db54, type: 3}
-  currentUpgradeLevel: 1
+  currentUpgradeLevel: 0
   description: VOUUUS NE PASSEREZ PAS !!
   upgradeDescription: 2 enemies/s (level 1) > 5 enemies/s (level 2)
   goldCost: 0
