@@ -57,6 +57,8 @@ namespace Menus
         public void WipeSave()
         {
             Player.Instance.ResetProgress();
+            // Un wipe de save reinitialise aussi les succes (coherence avec la progression).
+            Game.AchievementStore.ResetAll();
             if (LevelSelectManager.Instance != null)
                 LevelSelectManager.Instance.RefreshButtons();
         }

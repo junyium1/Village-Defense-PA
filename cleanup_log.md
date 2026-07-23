@@ -269,3 +269,23 @@ Contexte : demande utilisateur 2026-07-24 — minimap calquée sur la grille de 
 - **Tester en jeu** : icônes suivent ennemis/tourelles/pièges en temps réel, M affiche/masque, rien au menu principal, 0 erreur console.
 - Si un futur niveau a une taille de grille différente : le sprite de grille se régénère automatiquement (cache par `SizeInCells`).
 - Pool de 160 icônes : au-delà, les entités excédentaires sont simplement ignorées (à augmenter si des vagues dépassent ~150 unités).
+
+## 2026-07-24 — Polish minimap + système de succès (T-14 — délégué assistant + revue chef)
+
+Contexte : MCP revenu. Demandes utilisateur : ① polish léger minimap (pack léger + boss violet), ② système de succès affiché **uniquement au menu principal**, ouverture **Echap**, fond pancarte (même style que Discord/Touches), 4 succès : lier Discord / finir niveau 1 / finir le 1ᵉʳ boss / finir tous les niveaux.
+
+**Polish minimap (chef, commit `5c56ceb`)** — `MinimapUI.cs` : panel 208→240 px, fond α 0,72, bordure crème 3 px, titre « CARTE » au-dessus du panneau ; en niveau boss (`LevelSelectManager.SelectedLevel.isBoss` — il n'existe pas d'unité boss distincte, le boss est un flag de NIVEAU) les ennemis = gros ronds violets ×1,8 (taille réappliquée à chaque placement car le pool réutilise les icônes).
+
+**Succès (assistant, revue + accents par le chef)** :
+- **`Game/Achievements/AchievementStore.cs`** *(créé)* : `AchievementDef` (classe simple) + 4 defs ; flags PlayerPrefs `Ach.<id>` **monotones** ; `EvaluateAll()` null-safe appelé à chaque ouverture de l'écran ; `ResetAll()` pour le wipe.
+- **`UI/PancarteStyle.cs`** *(créé)* : palette bois centralisée (copiée de LinkAccountScreen) + `LoadPlank`/`ApplyVeil`/`ApplyPlank`/`StyleButton`. Duplication assumée avec `LinkAccountScreen.ApplyPancarteSkin` (non refactoré pour ne pas casser un écran validé — à factoriser plus tard).
+- **`Menus/AchievementsScreen.cs`** *(créé)* : auto-spawn si scène == `MainMenuScene` (idiome MinimapUI, zéro édition de scène), canvas 500, voile + planche 1240×675.86, titre « SUCCÈS », 4 lignes (titre/description/état DÉBLOQUÉ vert / VERROUILLÉ gris), bouton FERMER, Echap toggle. Gardes anti-conflit : n'ouvre pas si `KeybindsScreen.IsOpen` / `LinkAccountScreen.IsOpen` / `InventoryScreen.IsOpen`.
+- **`LevelButtonUI.cs`** *(+3 l.)* : `public LevelData Data => levelData;`.
+- **`LevelSelectManager.cs`** *(+22 l.)* : `GetOrderedLevels()` (tri par levelID).
+- **`MenuManager.cs`** *(+2 l.)* : `WipeSave()` appelle aussi `AchievementStore.ResetAll()`.
+- **`LinkAccountScreen.cs` / `InventoryScreen.cs`** *(+14 l. chacun)* : `static bool IsOpen` (true dans Open, false dans les 2 chemins de Close).
+
+### À FAIRE / à surveiller
+- **Tester au menu** : Echap ouvre/ferme les succès, les états passent en vert après avoir lié Discord / terminé des niveaux, Wipe save réinitialise.
+- Erreurs console **pré-existantes** (sans rapport, repérées au reload 2026-07-24) : 3× « referenced script missing » dans la scène ouverte (séquelles du merge ?), `UniversalRenderPipelineGlobalSettings` missing types (dérive URP), NRE `CameraSystem.cs:71` au OnEnable. À investiguer dans un ticket dédié si gênant.
+- Toast en jeu au déblocage d'un succès : non fait (store a tout ce qu'il faut via `EvaluateAll`).

@@ -11,6 +11,10 @@ namespace DiscordBridge.UI
     // Ouvert à la demande (LinkAccountMenuButton.Open), affiche l'état "lié" ou "non lié".
     public class LinkAccountScreen : MonoBehaviour
     {
+        // Vrai tant que l'ecran est affiche : sert a empecher Echap d'ouvrir les succes
+        // par-dessus cet ecran (cf. AchievementsScreen.Update).
+        public static bool IsOpen { get; private set; }
+
         [SerializeField] LinkAccountController controller;
         [SerializeField] PlayerProfileData profileData;
 
@@ -90,15 +94,23 @@ namespace DiscordBridge.UI
         public void Open()
         {
             gameObject.SetActive(true);
+            IsOpen = true;
             if (panelAnimator != null) panelAnimator.PlayOpen();
         }
 
         void Close()
         {
             if (panelAnimator != null)
-                panelAnimator.PlayClose(() => gameObject.SetActive(false));
+                panelAnimator.PlayClose(() =>
+                {
+                    gameObject.SetActive(false);
+                    IsOpen = false;
+                });
             else
+            {
                 gameObject.SetActive(false);
+                IsOpen = false;
+            }
         }
 
         // Affiche le bon groupe selon l'etat de liaison courant.

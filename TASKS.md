@@ -178,6 +178,15 @@
 
 ---
 
+## T-14 [x] (review) : Système de succès — menu principal uniquement, ouverture Echap
+**Zone :** Unity C# — `Game/Achievements/`, `UI/`, `Menus/` (build 100 % code, **aucune édition de scène**).
+**Contexte :** Demande utilisateur 2026-07-24 : succès listés au menu principal (Echap), fond pancarte comme Discord/Touches. Liste retenue (4) : lier Discord / finir niveau 1 / finir le 1ᵉʳ boss / finir tous les niveaux.
+**Réalisation (délégué assistant, revue chef) :** `AchievementStore` (4 defs, PlayerPrefs monotone `Ach.<id>`, `EvaluateAll`, `ResetAll`) + `PancarteStyle` (palette bois partagée) + `AchievementsScreen` (auto-spawn MainMenuScene, canvas 500, planche 1240×675.86, 4 lignes + FERMER, Echap toggle, gardes IsOpen Keybinds/LinkAccount/Inventory) ; accesseurs `LevelButtonUI.Data` + `LevelSelectManager.GetOrderedLevels()` ; `WipeSave` réinitialise aussi les succès ; `IsOpen` ajouté aux 2 écrans Discord. Compile 0 erreur CS (vérifié MCP).
+**Acceptance :** au menu, Echap ouvre/ferme ; les succès se débloquent (vert) après liaison Discord / complétion de niveaux ; Wipe save les réinitialise. **À valider en jeu par l'utilisateur.**
+**Suite possible :** toast en jeu au déblocage (store prêt).
+
+---
+
 ## Notes pour OpenCode
 Écris ici si un ticket est ambigu ou touche une zone interdite. Ne bloque pas la file — passe au suivant.
 

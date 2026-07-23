@@ -12,6 +12,10 @@ namespace DiscordBridge.UI
     // Ne connait jamais le reseau ni les DTOs.
     public class InventoryScreen : MonoBehaviour
     {
+        // Vrai tant que l'ecran est affiche : sert a empecher Echap d'ouvrir les succes
+        // par-dessus cet ecran (cf. AchievementsScreen.Update).
+        public static bool IsOpen { get; private set; }
+
         [SerializeField] InventoryData inventoryData;
         [SerializeField] ProfileSyncController profileSync;
         [SerializeField] ConsumeItemController consumeController;
@@ -84,6 +88,7 @@ namespace DiscordBridge.UI
         public void Open()
         {
             gameObject.SetActive(true);
+            IsOpen = true;
             if (panelAnimator != null) panelAnimator.PlayOpen();
             OnRefreshClicked();
         }
@@ -91,9 +96,16 @@ namespace DiscordBridge.UI
         void Close()
         {
             if (panelAnimator != null)
-                panelAnimator.PlayClose(() => gameObject.SetActive(false));
+                panelAnimator.PlayClose(() =>
+                {
+                    gameObject.SetActive(false);
+                    IsOpen = false;
+                });
             else
+            {
                 gameObject.SetActive(false);
+                IsOpen = false;
+            }
         }
 
         void OnRefreshClicked()

@@ -9,6 +9,9 @@ namespace Menus
     {
         [Header("Data")] [SerializeField] LevelData levelData;
 
+        // Expose les donnees du niveau aux consommateurs externes (ex : succes).
+        public LevelData Data => levelData;
+
         [Header("References")] [SerializeField]
         Button button;
 
