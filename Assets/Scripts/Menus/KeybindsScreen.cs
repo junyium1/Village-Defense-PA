@@ -153,6 +153,52 @@ namespace Menus
             if (existing == null) return;
             _root = existing.gameObject;
             CacheLabelReferences();
+            RewireButtons();
+        }
+
+        /// <summary>Recâble les onClick d'un « KeybindsCanvas » sauvegardé dans la scène :
+        /// les listeners ajoutés par code dans <see cref="Build"/> ne sont PAS sérialisés —
+        /// sans ce recâblage, Retour / Par défaut / les touches ne répondent plus au clic.</summary>
+        void RewireButtons()
+        {
+            Transform board = _root.transform.Find("Panel/Board");
+            if (board == null) return;
+
+            for (int i = 0; i < KeybindStore.ActionCount; i++)
+            {
+                Transform row = board.Find("Row_" + (KeybindAction)i);
+                if (row == null) continue;
+                Transform key = row.Find("Key");
+                if (key == null) continue;
+                Button button = key.GetComponent<Button>();
+                if (button == null) continue;
+                int captured = i;   // capture explicite : la lambda survit à la boucle
+                button.onClick.AddListener(() => BeginRebind(captured));
+            }
+
+            Transform footer = board.Find("Footer");
+            if (footer == null) return;
+
+            Transform defaults = footer.Find("Defaults");
+            if (defaults != null)
+            {
+                Button defaultsButton = defaults.GetComponent<Button>();
+                if (defaultsButton != null)
+                    defaultsButton.onClick.AddListener(() =>
+                    {
+                        _awaiting = -1;
+                        KeybindStore.ResetToDefaults();
+                        RefreshLabels();
+                    });
+            }
+
+            Transform back = footer.Find("Back");
+            if (back != null)
+            {
+                Button backButton = back.GetComponent<Button>();
+                if (backButton != null)
+                    backButton.onClick.AddListener(Close);
+            }
         }
 
         /// <summary>Retrouve les labels de touche par chemin, après réutilisation d'un

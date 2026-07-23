@@ -63,6 +63,7 @@
 **Acceptance :** Tous les menus cohérents visuellement (palette, boutons arrondis, animations), vérifiés en Play, 0 erreur console.
 > **Note (session 3) :** le **menu principal 3D « signpost »** est sorti en tickets dédiés **T-06 → T-10** (séquencés, dépendants). T-05 = reste des menus 2D (inventaire / discord / pause).
 > **Avancement (2026-07-21, session OpenCode) :** Phase 2 faite — MainMenuScene : LevelMenuPanel désactivé, ManaHUD_BG créé (fond sombre), LinkAccountScreen_Panel + InventoryScreen_Panel désactivés (à activer au besoin). GameScene : PauseMenu stylisé (fond très sombre, boutons violet foncé), CurrencyDisplay avec fond violet sombre. Static batching activé sur 1035 renderers (Phase 3). Reste : test souris réel, positions fines des boutons.
+> **Avancement (2026-07-24) :** écran **Liaison Discord reskinné « pancarte »** (façon écran Touches : fond `pencarte`, voile dim, boutons bois existants restylés) — implémenté **en C# runtime** (`LinkAccountScreen.ApplyPancarteSkin`, zéro édition de scène, MCP down cette session) + **fix bouton Retour de l'écran Touches** (`KeybindsScreen.RewireButtons` : les listeners `AddListener` d'un canvas sauvegardé en scène ne sont pas sérialisés → tous les boutons étaient morts). **À tester en Play.** Reste : même skin sur `InventoryScreen_Panel` (décision débord liste à prendre avec l'utilisateur).
 
 ---
 
