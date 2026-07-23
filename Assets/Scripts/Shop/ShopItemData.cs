@@ -21,9 +21,12 @@ namespace Shop
     {
         public string displayName;
         public Sprite icon;
+        public int currentUpgradeLevel;
 
         [TextArea] // better display
         public string description;
+        [TextArea] 
+        public string upgradeDescription;
 
         public int goldCost;
         public int crystalCost;

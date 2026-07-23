@@ -14,9 +14,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Shop.TrapShopData
   displayName: Portal
   icon: {fileID: 21300000, guid: 74de35727ded47c43b7374fce8390561, type: 3}
-  description: I eat enemies miam miam miam !
-  goldCost: 200
-  crystalCost: 0
+  currentUpgradeLevel: 1
+  description: I eat enemies miam miam miam ! MDR
+  upgradeDescription: 2 enemies/s (level 1) > 5 enemies/s (level 2)
+  goldCost: 18
+  crystalCost: 50
   prefab: {fileID: 0}
   upgrades:
   - description: 
