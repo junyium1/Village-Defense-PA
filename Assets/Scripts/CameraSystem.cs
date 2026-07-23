@@ -1,10 +1,13 @@
 using UnityEngine;
 using Unity.Cinemachine;
+using Menus;
 public class CameraSystem : MonoBehaviour
 {
     private CameraInput cameraInput;
     [SerializeField] private CinemachineCamera cinemachineCamera;
     [SerializeField] private float moveSpeed = 90f;
+    [Tooltip("Vitesse de montée / descente (touches Haut et Bas rebindables).")]
+    [SerializeField] private float elevationSpeed = 60f;
     [SerializeField] private float rotateSpeed = 90f;
     [SerializeField] private float mouseRotateSpeed = 0.2f;
     [SerializeField] private float zoomSpeed = 15f;
@@ -52,6 +55,15 @@ public class CameraSystem : MonoBehaviour
     private void Awake()
     {
         cameraInput = new CameraInput();
+        // Touches rebindées depuis Options -> Touches : les overrides sont posés sur
+        // CETTE instance d'asset (chaque `new CameraInput()` en crée une nouvelle),
+        // et re-posés automatiquement à chaque changement.
+        KeybindStore.Register(cameraInput.asset);
+    }
+
+    private void OnDestroy()
+    {
+        if (cameraInput != null) KeybindStore.Unregister(cameraInput.asset);
     }
 
     private void OnEnable()
@@ -128,7 +140,9 @@ public class CameraSystem : MonoBehaviour
             ? transform.up * inputDirection.z + transform.right * inputDirection.x
             : transform.forward * inputDirection.z + transform.right * inputDirection.x;
         transform.position += moveDirection * moveSpeed * Time.deltaTime;
-        
+
+        HandleCameraElevation();
+
         if (enableEdgeScrolling)
         {
             Vector3 edgeDirection = ApplyEdgeScrolling(Vector3.zero);
@@ -139,6 +153,25 @@ public class CameraSystem : MonoBehaviour
             Vector3 right = new Vector3(transform.right.x, 0, transform.right.z).normalized;
             transform.position += (forward * edgeDirection.z + right * edgeDirection.x) * moveSpeed * Time.deltaTime;
         }
+    }
+
+    /// <summary>
+    /// Monte / descend la caméra (touches Haut et Bas du menu Options -> Touches).
+    /// Absent de CameraInput (asset antérieur au rebind) : lu directement via
+    /// <see cref="KeybindStore.IsHeld"/>. Sans effet en vue de dessus, dont la
+    /// hauteur est imposée par <c>topDownViewHeight</c>.
+    /// La hauteur reste bornée par les murs invisibles (ClampToInvisibleWalls).
+    /// </summary>
+    private void HandleCameraElevation()
+    {
+        if (isTopDownView) return;
+
+        float elevation = 0f;
+        if (KeybindStore.IsHeld(KeybindAction.Up)) elevation += 1f;
+        if (KeybindStore.IsHeld(KeybindAction.Down)) elevation -= 1f;
+        if (elevation == 0f) return;
+
+        transform.position += Vector3.up * (elevation * elevationSpeed * Time.deltaTime);
     }
 
     private Vector3 ApplyEdgeScrolling(Vector3 inputDirection)

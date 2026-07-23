@@ -227,3 +227,19 @@ Contexte : passage au duo natif OpenCode (agent `build` = Qwen3.7 Max = chef, su
 - **`BuildingSurface`** — *(MeshRenderer éteint)* Plan 200×200 `Grass.mat` qui doublonnait visuellement avec `Sol`. MeshCollider conservé pour les raycasts de placement.
 - **`Assets/Scripts/BuildingSystem/GridBlinker.cs`** — *(créé)* Pulse sinusoïdal de l'alpha de la grille via MaterialPropertyBlock (`_Color`), unscaledTime (survit à la pause).
 - **`BuildingSystem/GridVisualization`** — *(activé + GridBlinker attaché)* Grille visible en permanence avec clignotement pendant la partie.
+
+## 2026-07-23 — Cohérence map ↔ grille (GameScene) — zone fixe, sol herbe plat, grille build-only
+
+Contexte : demande utilisateur « finir l'intégration de la map avec la grille ». Diagnostic : le niveau est un bloc autonome (`LevelZone` à l'origine + tous ses enfants), la clairière du décor est un **flanc de colline** (~18 u de dénivelé sur l'emprise 200×200) → la dalle plate se faisait traverser par le relief. Choix utilisateur : zone **fixe** ce niveau, rendu **herbe** (plus de marron), grille **invisible sauf en mode build**.
+
+- **`Assets/Scripts/Game/GameManager.cs`** — *(modifié, Start)* Branche `zonePlacer == null` : auto-`LevelZone.Instance.Confirm()` avant `EnterPlacement()`, pour qu'une zone fixe (posée en éditeur) soit constructible sans phase de placement runtime. Vérifié en Play : `IsPlaced=true` au démarrage, NavMesh baké, chemin spawn→objectif `PathComplete`.
+- **`GameScene › GameManager.zonePlacer`** — *(scène, mis à None)* Court-circuite la phase `ZonePlacement` (drag de la zone à la souris) — non voulue pour un niveau fixe. `LevelZonePlacer` conservé sur `GameController` pour l'éditeur / autres niveaux.
+- **`GameScene › LevelZone`** — *(scène)* `position.y` 0 → **7.5** : monte tout le niveau (grille, sol, spawn, village, objectif, cameraBounds) au-dessus du terrain (max +7.05 sous l'emprise). Plan de pose des bâtiments (`Grid.CellToWorld`) → Y=7.5 uniforme.
+- **`GameScene › LevelZone/Sol`** — *(scène)* Cube transformé en **dalle herbe** : `localScale` (200,0.2,200) → (210,**18.95**,210), `localPosition` (0.5,0.35,5.1) → (0,**-9.025**,0) ; top monde ≈ 7.95 (au-dessus du relief), bottom ≈ -11 (sous le terrain → pas de flottement au bord aval). Matériau `Sol plane.mat` → **`Grass.mat`**. Remplace la terre brune par de l'herbe plate constructible.
+- **`GameScene › LevelZone/GridParent/GridVisualization`** — *(scène)* `localPosition.y` 0 → **0.5** (monde 8.0) : grille pile au-dessus de l'herbe. Reste **masquée hors build** (PlacementSystem show/hide) car la zone est désormais auto-validée (`ZoneNotReady=false`). ⚠️ Supersède l'entrée 2026-07-22 « grille visible en permanence + GridBlinker » : elle n'était permanente que parce que la zone n'était jamais validée (phase ZonePlacement). `GridBlinker` toujours attaché → pulse pendant le mode build uniquement.
+- **`GameScene › BuildingSurface`** — *(désactivé, `SetActive(false)`)* Plan 200×200 orphelin (layer Default, hors LevelZone, renderer déjà éteint). Non utilisé pour le placement (les raycasts de pose visent le layer **Placement** = `GridVisualization`, pas Default). Réversible ; supprimable définitivement sur accord.
+
+### À FAIRE / à surveiller
+- **`LevelZone.Instance` ressort `null` en Play après le démarrage** (le composant est bien vivant, `IsPlaced=true`) — anomalie pré-existante de `LevelZone`, sans impact ici (toutes les refs runtime sont assignées en scène, pas de fallback `Instance`). À durcir si un futur code dépend de `Instance`.
+- Léger écart de teinte entre la dalle `Grass.mat` (vert plat) et l'herbe texturée de la map ; bords masqués par les arbres. Option : essayer `Assets/Art/map/Materials/Terrain_Baked.mat` sur la dalle pour un raccord plus fin.
+- Décroché (mesa) jusqu'à ~18 u au coin aval de la clairière, masqué par la ligne d'arbres. Si gênant : option « aplatir le terrain » (édition mesh) écartée pour l'instant.

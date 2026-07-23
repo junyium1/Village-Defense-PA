@@ -10,12 +10,19 @@ namespace Menus
     /// </summary>
     public class PausePlankAction : SignPlankBase
     {
-        public enum Action { Resume, ShowOptions, ShowPauseMain, QuitToMainMenu }
+        public enum Action { Resume, ShowOptions, ShowPauseMain, QuitToMainMenu, ShowKeybinds }
 
         [SerializeField] Action action = Action.Resume;
 
         public override void OnClicked()
         {
+            // Superposition 2D : indépendante des pancartes 3D (cf. SignPlankAction).
+            if (action == Action.ShowKeybinds)
+            {
+                KeybindsScreen.Open();
+                return;
+            }
+
             var menu = PauseMenu3DController.Instance;
             if (menu == null) return;
 

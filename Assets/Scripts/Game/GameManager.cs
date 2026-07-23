@@ -54,9 +54,16 @@ namespace Game
                 levelTitle.text = LevelSelectManager.SelectedLevel.levelName;
 
             if (zonePlacer != null)
+            {
                 EnterZonePlacement();
+            }
             else
+            {
+                // Zone fixe (posee en editeur) : on la valide immediatement pour que
+                // la construction soit disponible sans phase de placement runtime.
+                if (LevelZone.Instance != null) LevelZone.Instance.Confirm();
                 EnterPlacement();
+            }
         }
 
         /// <summary>

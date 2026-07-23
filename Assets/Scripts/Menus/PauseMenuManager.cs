@@ -22,6 +22,10 @@ namespace Menus
         // once per frame
         private void Update()
         {
+            // L'écran Touches consomme Echap (fermeture / annulation d'un rebind) :
+            // sans ce garde, reprendre le jeu passerait avant sa fermeture.
+            if (Menus.KeybindsScreen.IsOpen) return;
+
             if (Input.GetKeyDown(KeyCode.Escape))
             {
                 if (_isPaused)
