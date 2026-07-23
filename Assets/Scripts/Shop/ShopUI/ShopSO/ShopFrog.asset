@@ -9,16 +9,17 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4c7d4c05e9de4785a4fbaf75d354ffcd, type: 3}
-  m_Name: Turret
-  m_EditorClassIdentifier: Assembly-CSharp::Shop.TrapShopData
-  displayName: Turret
-  icon: {fileID: 21300000, guid: 3ac3e72a756b45f43815cd3593e175ba, type: 3}
-  description: Piou piou !!
-  goldCost: 200
+  m_Script: {fileID: 11500000, guid: 8c91f7fbbfa04d59a61288030e4b2ca3, type: 3}
+  m_Name: ShopFrog
+  m_EditorClassIdentifier: Assembly-CSharp::Shop.TroopShopData
+  displayName: Frog
+  icon: {fileID: 0}
+  currentUpgradeLevel: 0
+  description: 
+  upgradeDescription: 
+  goldCost: 0
   crystalCost: 0
-  prefab: {fileID: 7818129557130110890, guid: 134209c9b0dfac34fb716615e037a370, type: 3}
-  placementSize: {x: 1, y: 1}
+  prefab: {fileID: 0}
   upgrades:
   - description: 
     crystalCost: 0
@@ -41,4 +42,4 @@ MonoBehaviour:
     speedMultiplier: 1
     capacity: 0
     maxNbTauntedEnemies: 0
-  defenseData: {fileID: 0}
+  unitData: {fileID: 0}
