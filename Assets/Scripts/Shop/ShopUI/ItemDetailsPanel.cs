@@ -15,7 +15,6 @@ namespace Shop
 
         public void Toggle(ShopItemData item)
         {
-            // même item déjà affiché → on ferme
             if (gameObject.activeSelf && _currentItem == item)
             {
                 Hide();

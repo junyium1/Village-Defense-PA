@@ -15587,8 +15587,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 24766e59600d459094d594b1d8330c2f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Game.Player
-  gold: 118
-  crystals: 366
+  gold: 1000
+  crystals: 500
 --- !u!4 &1216975316
 Transform:
   m_ObjectHideFlags: 0

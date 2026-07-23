@@ -7,7 +7,6 @@ namespace Game.Defenses
     {
         public float triggerRadius;
         public int enemyThreshold;
-        public float tauntDuration;
         public float damage;
         public float explosionRadius;
     }

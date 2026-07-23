@@ -42,16 +42,30 @@ namespace Shop
         
 
         // -------------- capitalism --------------
-        public bool TryBuy(ShopItemData item)
+        // L'or n'est PAS débité ici : le paiement a lieu au moment où l'objet est
+        // effectivement posé sur la grille (PlacementManager.HandlePlacementComplete).
+        // Annuler le placement (Échap) ne coûte donc rien.
+        public bool TryStartPlacingItem(ShopItemData item)
         {
+            if (gameManager != null && gameManager.currentPhase != GamePhase.Placement)
+            {
+                Debug.Log($"{item.displayName} : placement uniquement en phase de placement.");
+                return false;
+            }
+
+            if (item.prefab == null)
+            {
+                Debug.LogError($"{item.displayName} : aucun prefab assigné sur l'asset boutique.");
+                return false;
+            }
+
             if (!Player.Instance.CanAffordItem(item.goldCost))
             {
                 Debug.Log($"Cannot afford {item.displayName}");
                 return false;
             }
 
-            Player.Instance.SpendGold(item.goldCost);
-            Debug.Log($"Bought {item.displayName}");
+            gameManager.placementManager.RequestPlacement(item);
             return true;
         }
 
