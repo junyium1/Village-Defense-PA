@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Shop.TrapShopData
   displayName: Turret
   icon: {fileID: 21300000, guid: 3ac3e72a756b45f43815cd3593e175ba, type: 3}
-  currentUpgradeLevel: 1
+  currentUpgradeLevel: 0
   description: Piou piou !!
   upgradeDescription: 2 enemies/s (level 1) > 5 enemies/s (level 2)
   goldCost: 200

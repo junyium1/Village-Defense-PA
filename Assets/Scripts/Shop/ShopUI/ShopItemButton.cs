@@ -11,8 +11,6 @@ namespace Shop
 
         private void Start()
         {
-            // Un clic = infos affichées ET mode placement lancé dans la foulée ;
-            // l'or n'est débité qu'au moment où l'objet est réellement posé.
             GetComponent<Button>().onClick.AddListener(() =>
             {
                 detailsPanel.Toggle(itemData);

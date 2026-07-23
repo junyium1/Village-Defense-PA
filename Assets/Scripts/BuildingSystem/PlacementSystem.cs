@@ -30,7 +30,7 @@ public class PlacementSystem : MonoBehaviour
     
     IBuildingState buildingState;
 
-    public event Action OnPlacementComplete;
+    public event Action<GameObject> OnPlacementComplete;
     public event Action OnPlacementCancelled;
     
     private void Start()
@@ -91,7 +91,7 @@ public class PlacementSystem : MonoBehaviour
         // Mode continu : l'état reste actif après chaque pose pour enchaîner sans
         // recliquer sur l'item. Chaque pose est facturée par PlacementManager, qui
         // stoppe le mode dès que l'or ne suffit plus pour la suivante.
-        state.OnPlaced += () => OnPlacementComplete?.Invoke();
+        state.OnPlaced += go => OnPlacementComplete?.Invoke(go);
         buildingState = state;
 
         inputManager.OnClicked += PlaceStructure;

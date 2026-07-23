@@ -28,6 +28,14 @@ namespace Menus
 
             if (Input.GetKeyDown(KeyCode.Escape))
             {
+                // Priorité : si un panneau ouvert via PanelToggle (ex: upgrade) est affiché
+                // et qu'on n'est pas en pause, Échap le ferme d'abord sans ouvrir la pause.
+                if (!_isPaused && PanelToggle.OpenPanel != null && PanelToggle.OpenPanel.activeSelf)
+                {
+                    PanelToggle.OpenPanel.SetActive(false);
+                    return;
+                }
+
                 if (_isPaused)
                 {
                     Resume();
