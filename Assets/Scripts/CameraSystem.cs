@@ -25,6 +25,19 @@ public class CameraSystem : MonoBehaviour
     [Tooltip("BoxCollider (trigger) définissant la zone de déplacement de la caméra. Laisser null pour désactiver le clamping.")]
     [SerializeField] private BoxCollider cameraBounds;
 
+    [Header("Murs invisibles (limite dure)")]
+    [Tooltip("Murs invisibles de la map. Cette limite s'applique TOUJOURS, même quand le " +
+             "clamping de zone est suspendu : la caméra ne peut jamais traverser les murs.")]
+    [SerializeField] private InvisibleWallFeedback invisibleWalls;
+
+    [Tooltip("Marge gardée entre la caméra et les murs / le sol, en unités monde.")]
+    [SerializeField] private float wallMargin = 5f;
+
+    [Tooltip("Caméra réellement rendue. C'est elle qu'on garde dans la boîte, pas ce rig : " +
+             "la CinemachineCamera suit le rig avec un décalage, donc clamper le rig " +
+             "laisserait la vraie caméra dépasser les murs. Vide = Camera.main.")]
+    [SerializeField] private Transform clampProbe;
+
     // Pendant le choix d'emplacement de la zone jouable, la caméra doit pouvoir
     // survoler toute la map : le clamping est suspendu, pas supprimé.
     private bool clampEnabled = true;
@@ -67,6 +80,16 @@ public class CameraSystem : MonoBehaviour
         HandleCameraRotation();
         HandleCameraZoom();
         ClampCameraPosition();
+        ClampToInvisibleWalls();
+    }
+
+    private void Start()
+    {
+        if (invisibleWalls == null) invisibleWalls = FindFirstObjectByType<InvisibleWallFeedback>();
+
+        // Le rig peut être placé hors de la boîte dans la scène : on le ramène
+        // dedans avant la première frame plutôt que de laisser un saut visible.
+        ClampToInvisibleWalls();
     }
 
     private void HandleTopDownView()
@@ -211,5 +234,37 @@ public class CameraSystem : MonoBehaviour
 
         // Retour world
         transform.position = cameraBounds.transform.TransformPoint(localPos);
+    }
+
+    /// <summary>
+    /// Limite dure : la caméra reste dans la boîte des murs invisibles, sur les
+    /// trois axes. Contrairement à <see cref="ClampCameraPosition"/>, ce clamp
+    /// n'est jamais suspendu — même pendant le choix d'emplacement de la zone.
+    /// </summary>
+    private void ClampToInvisibleWalls()
+    {
+        if (invisibleWalls == null || !invisibleWalls.HasBounds) return;
+
+        if (clampProbe == null)
+        {
+            if (Camera.main == null) return;
+            clampProbe = Camera.main.transform;
+        }
+
+        Bounds b = invisibleWalls.WorldBounds;
+        Vector3 min = b.min + Vector3.one * wallMargin;
+        Vector3 max = b.max - Vector3.one * wallMargin;
+
+        // On raisonne sur la position de la caméra rendue, puis on reporte la
+        // correction sur le rig : le décalage Cinemachine est ainsi absorbé,
+        // quelle que soit la rotation courante.
+        Vector3 camPos = clampProbe.position;
+        Vector3 clamped = new Vector3(
+            Mathf.Clamp(camPos.x, min.x, max.x),
+            Mathf.Clamp(camPos.y, min.y, max.y),
+            Mathf.Clamp(camPos.z, min.z, max.z));
+
+        Vector3 correction = clamped - camPos;
+        if (correction.sqrMagnitude > 1e-6f) transform.position += correction;
     }
 }
