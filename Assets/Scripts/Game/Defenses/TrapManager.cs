@@ -6,10 +6,16 @@ namespace Game.Defenses
 {
     public class TrapManager : MonoBehaviour
     {
+        /// <summary>Registre des pieges poses (minimap).</summary>
+        public static readonly List<TrapManager> All = new List<TrapManager>();
+
         public TrapData data;
 
         readonly HashSet<Unit> _tauntedEnemies = new HashSet<Unit>();
         bool _hasExploded = false;
+
+        void OnEnable() => All.Add(this);
+        void OnDisable() => All.Remove(this);
 
         void Update()
         {

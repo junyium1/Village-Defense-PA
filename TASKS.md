@@ -168,6 +168,16 @@
 
 ---
 
+## T-13 [x] (review) : Minimap schématique temps réel (GameScene)
+**Zone :** Unity C# — `Assets/Scripts/Game/` (build 100 % code, **aucune édition de scène**).
+**Contexte :** Demande utilisateur 2026-07-24 : minimap calquée sur la grille de jeu (32×32), bas-gauche ; rond rouge ennemi / carré vert bâtiment / rond vert allié. Choix : bâtiments = tourelles + pièges ; toggle M.
+**Réalisation (délégué assistant, revue + cache anti-fuite par le chef) :**
+- Registres statiques `Unit.All` / `TurretManager.All` / `TrapManager.All` (OnEnable/OnDisable).
+- `MinimapUI.cs` : auto-spawn (`SceneManager.sceneLoaded` + `LevelZone` présente, fallback `FindAnyObjectByType`), canvas overlay order 100, panel 208 px bas-gauche (marge 24 px), grille + bordure sur texture 256×256 procédurale (cache statique), icônes poolées (160, cercle procédural ; carré = Image sans sprite), refresh 0,15 s unscaled, projection `InverseTransformPoint`/`WorldSize` (yaw géré), ennemis empilés au-dessus, **M** = toggle.
+**Acceptance :** compile 0 erreur ; en jeu : les icônes suivent ennemis/tourelles/pièges en temps réel, M affiche/masque, rien au menu principal. **À valider en jeu par l'utilisateur.**
+
+---
+
 ## Notes pour OpenCode
 Écris ici si un ticket est ambigu ou touche une zone interdite. Ne bloque pas la file — passe au suivant.
 

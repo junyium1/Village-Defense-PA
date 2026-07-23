@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace Game.Defenses
@@ -5,6 +6,9 @@ namespace Game.Defenses
     [RequireComponent(typeof(Health))]
     public class TurretManager : MonoBehaviour
     {
+        /// <summary>Registre des tourelles posees (minimap).</summary>
+        public static readonly List<TurretManager> All = new List<TurretManager>();
+
         public TurretData data;
 
         [SerializeField] Transform firePoint;
@@ -12,6 +16,9 @@ namespace Game.Defenses
 
         Transform _target;
         float _fireCountdown;
+
+        void OnEnable() => All.Add(this);
+        void OnDisable() => All.Remove(this);
 
         void Awake()
         {
