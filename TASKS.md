@@ -187,6 +187,62 @@
 
 ---
 
+## T-15 (blocked — MCP Blender injoignable) : Assets Blender sur les ennemis
+**Zone :** Blender → FBX → `Assets/Art/` + prefab ennemi (MCP Unity). **Prérequis utilisateur : relancer le MCP Blender côté Blender.**
+**Contexte :** Demande 2026-07-24 : remplacer le visuel « pion » des ennemis par de vrais assets modélisés (tâche 4 d'origine).
+**Specs :**
+- Modéliser 2-3 meshes ennemis low-poly dans Blender (style cohérent avec la map LP) → export FBX.
+- ⚠️ `*.fbx` = **Git LFS** : les FBX gonflent le quota LFS du repo (1 Go gratuit) et exigent que les collègues aient installé LFS (liste fournie 2026-07-24).
+- Importer via MCP, créer/remplacer le visuel dans le prefab ennemi **sans toucher les composants gameplay** (`Unit`, `Health`, NavMeshAgent, colliders) — le mesh n'est que de l'habillage.
+- Option : variantes de mesh par vague ou par niveau boss (le flag `LevelData.isBoss` peut piloter un habillage différent).
+**Acceptance :** en Play, les ennemis ont le nouveau visuel, se déplacent/attaquent/meurent comme avant, 0 erreur console ; FBX bien commités en LFS.
+
+---
+
+## T-16 (ready) : Finir T-05 — inventaire pancarte + retouches Discord
+**Zone :** Unity C# — `DiscordBridge/UI/InventoryScreen.cs` (+ `LinkAccountScreen.cs` si retouches).
+**Contexte :** Reste de T-05 : appliquer le skin pancarte à `InventoryScreen_Panel`. **Décision utilisateur à prendre :** la liste défilante déborde de la planche de bois → ① élargir la pancarte ② réduire/masquer le débord du ScrollRect ③ assumer le débord.
+**Specs :**
+- Réutiliser `UI/PancarteStyle.cs` (helper créé pour T-14) — ne PAS dupliquer la palette.
+- En profiter pour factoriser `LinkAccountScreen.ApplyPancarteSkin` sur le helper (duplication assumée notée au cleanup_log 2026-07-24) — **avec test de non-régression** : l'écran Discord est validé utilisateur, ne pas le casser.
+- « Changer un peu le discord » : préciser avec l'utilisateur ce qu'il veut retoucher.
+**Acceptance :** inventaire en pancarte cohérent avec Discord/Touches/Succès, liste lisible, écran Discord inchangé visuellement, 0 erreur console.
+
+---
+
+## T-17 (ready) : Validation en jeu du système de succès (T-14)
+**Zone :** Play mode — menu principal + 1 niveau.
+**Checklist :**
+- Menu → **Echap** ouvre/ferme l'écran SUCCÈS (pancarte) ; Echap n'ouvre rien par-dessus Touches/Discord/Inventaire.
+- Lier un compte Discord → rouvrir → « Connecté » passe **DÉBLOQUÉ** (vert).
+- Terminer le niveau 1 → « Premier pas » débloqué ; idem 1ᵉʳ niveau boss → « Tombeur de boss ».
+- Bouton Wipe save → tous les succès repassent VERROUILLÉ.
+- Minimap : vérifier le polish (240 px, titre CARTE) et les **gros ronds violets** en niveau boss.
+**Acceptance :** checklist 100 % validée en Play → passer T-13/T-14 de `review` à `[x]` fermé.
+**Option (suite) :** toast en jeu au déblocage (store prêt, `EvaluateAll` monotone).
+
+---
+
+## T-18 (ready — MCP Unity requis) : Déplacer la grille de jeu sur une autre zone de la map
+**Zone :** `GameScene` via **MCP uniquement** (jamais d'édition YAML de scène).
+**Contexte :** Demande 2026-07-24 : « ajouter une map = juste déplacer la grille sur une autre zone du jeu » — la map visuelle (LP_Map) existe, la `LevelZone` (grille 32×32 + spawn + chemin ennemi) doit être repositionnée sur un autre emplacement.
+**Specs :**
+- Choisir l'emplacement **visuellement** : captures MCP (orbit/top-down) de la map → validation utilisateur du spot.
+- Déplacer le root de la zone (position + yaw éventuel) ; la minimap suit automatiquement (projection `InverseTransformPoint`/`WorldSize`).
+- Vérifier : spawn point et chemin ennemi cohérents avec le nouvel emplacement, NavMesh/rebake si nécessaire, caméra de jeu cadre la zone, hors-limites OK.
+- ⚠️ Si l'objectif est en fait un **niveau supplémentaire** (2ᵉ zone + `LevelData` 9ᵉ) → le dire : c'est un ticket différent (dupliquer la zone au lieu de la déplacer).
+**Acceptance :** en Play, la partie se déroule sur le nouvel emplacement (placement défenses + vagues + minimap), 0 erreur console, captures avant/après validées.
+
+---
+
+## En suspens (pas de ticket, à ne pas oublier)
+- **Push `main`** : commandes prêtes (2026-07-24), **attend le feu vert des collègues** (install LFS).
+- **Erreurs pré-existantes** (hors scope, reload 2026-07-24) : 3× referenced script missing (scène), `UniversalRenderPipelineGlobalSettings` missing types, NRE `CameraSystem.cs:71` — ticket dédié si ça gêne en jeu.
+- **Freeze fin de vague** : mis de côté à la demande de l'utilisateur — re-dire s'il faut le reprendre.
+- **Backend Discord** : T-01 (routes /debug) et T-03 (anti-farm) toujours `ready`, non démarrés ; T-04 bloqué par le Prompt 4 serveur.
+
+---
+
 ## Notes pour OpenCode
 Écris ici si un ticket est ambigu ou touche une zone interdite. Ne bloque pas la file — passe au suivant.
 
