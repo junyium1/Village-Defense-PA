@@ -168,7 +168,7 @@
 
 ---
 
-## T-13 [x] (review) : Minimap schématique temps réel (GameScene)
+## T-13 [x] (validé utilisateur 2026-07-24) : Minimap schématique temps réel (GameScene)
 **Zone :** Unity C# — `Assets/Scripts/Game/` (build 100 % code, **aucune édition de scène**).
 **Contexte :** Demande utilisateur 2026-07-24 : minimap calquée sur la grille de jeu (32×32), bas-gauche ; rond rouge ennemi / carré vert bâtiment / rond vert allié. Choix : bâtiments = tourelles + pièges ; toggle M.
 **Réalisation (délégué assistant, revue + cache anti-fuite par le chef) :**
@@ -178,7 +178,7 @@
 
 ---
 
-## T-14 [x] (review) : Système de succès — menu principal uniquement, ouverture Echap
+## T-14 [x] (validé utilisateur 2026-07-24) : Système de succès — menu principal uniquement, ouverture Echap
 **Zone :** Unity C# — `Game/Achievements/`, `UI/`, `Menus/` (build 100 % code, **aucune édition de scène**).
 **Contexte :** Demande utilisateur 2026-07-24 : succès listés au menu principal (Echap), fond pancarte comme Discord/Touches. Liste retenue (4) : lier Discord / finir niveau 1 / finir le 1ᵉʳ boss / finir tous les niveaux.
 **Réalisation (délégué assistant, revue chef) :** `AchievementStore` (4 defs, PlayerPrefs monotone `Ach.<id>`, `EvaluateAll`, `ResetAll`) + `PancarteStyle` (palette bois partagée) + `AchievementsScreen` (auto-spawn MainMenuScene, canvas 500, planche 1240×675.86, 4 lignes + FERMER, Echap toggle, gardes IsOpen Keybinds/LinkAccount/Inventory) ; accesseurs `LevelButtonUI.Data` + `LevelSelectManager.GetOrderedLevels()` ; `WipeSave` réinitialise aussi les succès ; `IsOpen` ajouté aux 2 écrans Discord. Compile 0 erreur CS (vérifié MCP).
@@ -210,7 +210,7 @@
 
 ---
 
-## T-17 (ready) : Validation en jeu du système de succès (T-14)
+## T-17 [x] (validé utilisateur 2026-07-24) : Validation en jeu du système de succès (T-14)
 **Zone :** Play mode — menu principal + 1 niveau.
 **Checklist :**
 - Menu → **Echap** ouvre/ferme l'écran SUCCÈS (pancarte) ; Echap n'ouvre rien par-dessus Touches/Discord/Inventaire.
@@ -236,7 +236,7 @@
 
 ---
 
-## T-19 [x] (review) : Bouton « Rejoindre le Discord » dans l'écran de liaison
+## T-19 [x] (validé utilisateur 2026-07-24) : Bouton « Rejoindre le Discord » dans l'écran de liaison
 **Zone :** Unity C# — `DiscordBridge/UI/LinkAccountScreen.cs` (100 % runtime, zéro scène).
 **Réalisation (2026-07-24) :** const `DiscordInviteUrl` (`https://discord.gg/qAtH7XuHc`) ; bouton « REJOINDRE LE DISCORD » créé dans `ApplyPancarteSkin` (listener vivant à chaque Play), inséré au-dessus de FERMER via `SetSiblingIndex`, style bois `RestyleButton`, `Application.OpenURL` (pattern `ShareButton`) ; **visible dans les 2 états** (lié / non lié — choix utilisateur). Bonus : `AchievementsScreen.Open()` passé `public` (hook de test MCP pour T-17). Compile 0 erreur CS (MCP). Commit `4113aaf`.
 **Acceptance :** bouton visible en Play, clic → navigateur sur l'invitation. À valider par l'utilisateur.
@@ -247,6 +247,19 @@
 **Zone :** Unity C# — `Game/Units/EnemyVisuals.cs` (nouveau) + `CombatManager.SpawnEnemy` (+3 lignes) + `Assets/Resources/Enemies/`.
 **Réalisation (2026-07-24, délégué assistant, revue + fix compile chef) :** au spawn, charge `Resources/Enemies/enemy_default` (et `enemy_boss` en niveau boss via `LevelData.isBoss`, repli sur default) ; si trouvé → instancié en enfant « Visual », `MeshRenderer` du pion **masqué** (jamais détruit), **auto-scale** à la hauteur du pion (bounds) ; cache statique anti-recharge ; no-op si rien déposé (placeholder conservé). `LISEZ-MOI.txt` dans le dossier. Fix chef : `Menus.LevelSelectManager` qualifié (pas de `using Menus;` dans `CombatManager`). Compile 0 erreur CS (MCP). Commit `dd0941f`.
 **Acceptance :** glisser `enemy_default.fbx` dans `Assets/Resources/Enemies/` → Play : nouveau visuel sans autre intervention ; sans FBX : pion inchangé. ⚠️ FBX = LFS.
+
+---
+
+## T-21 [x] : Succès × code de triche `unlock` + source de niveaux robuste
+**Zone :** Unity C# — `Game/LevelCatalog.cs` (nouveau), `Game/Player.cs`, `Game/Achievements/AchievementStore.cs`, `CheatConsole.cs` ; assets `LevelData` déplacés.
+**Contexte :** Demande 2026-07-24 : les succès doivent se débloquer avec le cheat `unlock` (console ²). Deux bugs combinés : ① `UnlockAllLevels()` ne marquait que le déblocage (`HighestUnlockedLevel=7`), jamais la complétion (`_completedLevels`) lue par les succès ; ② les conditions des succès exigeaient `LevelSelectManager.Instance != null` — or son panel 2D est **désactivé** (Awake jamais appelé) → les succès de niveaux ne pouvaient JAMAIS se débloquer, même en jeu légitime (bug silencieux de T-14).
+**Réalisation (2026-07-24) :**
+- 8 assets `LevelData` (Level1-6 + Boss1/2) déplacés `Assets/Scriptable Objects/Levels/` → **`Assets/Resources/Levels/`** (git mv, GUIDs inchangés → références scène intactes).
+- **`LevelCatalog.cs`** (nouveau, statique) : `GetAll()` = `Resources.LoadAll<LevelData>("Levels")` trié par levelID, cache. Source unique, disponible dans toute scène/build.
+- `AchievementStore` : conditions rebasées sur `LevelCatalog.GetAll()` (plus de dépendance à `LevelSelectManager.Instance`, `using Menus;` retiré).
+- `Player.UnlockAllLevels()` : marque tous les niveaux du catalogue comme **terminés** (repli plage 0..7 si catalogue vide) + appelle `AchievementStore.EvaluateAll()` immédiatement. Feedback console : « débloqués + terminés (succès inclus) ».
+- **Testé en Play via MCP** : catalogue 8 niveaux ; après unlock → level_1 / first_boss / all_levels / discord_link = **True**. Compile 0 erreur CS. Commit `6ec18eb`.
+**Acceptance :** ² → `unlock` → les 4 succès passent DÉBLOQUÉ ; la complétion légitime d'un niveau débloque aussi (source toujours disponible). ⚠️ Wipe save réinitialise tout (succès inclus).
 
 ---
 
