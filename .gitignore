@@ -110,6 +110,7 @@ CLAUDE.md
 AGENTS.md
 TASKS.md
 cleanup_log.md
+HANDOFF_*.md
 scripts/delegate.ps1
 .delegate-logs/
 .opencode/
