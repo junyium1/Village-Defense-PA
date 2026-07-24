@@ -1,0 +1,13 @@
+DROP ZONE — visuels ennemis
+============================
+Dépose ici tes modèles exportés (FBX) :
+  - enemy_default.fbx  -> remplace le pion placeholder des ennemis (requis)
+  - enemy_boss.fbx     -> variante utilisée dans les niveaux boss (optionnel, repli sur default)
+
+Aucun code / prefab / scène à toucher : au spawn, le modèle est instancié
+en enfant "Visual" de l'ennemi, mis à l'échelle automatiquement à la
+hauteur du placeholder, et le pion placeholder est simplement masqué.
+
+Si un modèle apparaît mal orienté : ajuste la rotation dans les import
+settings du FBX (ou dans Blender à l'export), pas dans le code.
+Rappel : les *.fbx sont trackés en Git LFS (quota partagé 1 Go).

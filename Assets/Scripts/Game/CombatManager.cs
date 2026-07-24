@@ -143,6 +143,9 @@ namespace Game
             Unit unit = go.GetComponent<Unit>();
             Health hp = go.GetComponent<Health>();
             if (unit != null) unit.data = enemyData;
+            // Drop zone visuelle : remplace le pion si un modele est depose (variante boss possible).
+            LevelData lvl = Menus.LevelSelectManager.SelectedLevel;
+            EnemyVisuals.Apply(go, lvl != null && lvl.isBoss);
             if (hp != null) hp.OnDeath += _ => OnEnemyDied(unit);
         }
 
