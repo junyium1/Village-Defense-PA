@@ -653,6 +653,8 @@ MonoBehaviour:
   statusText: {fileID: 2101639858}
   closeButton: {fileID: 389748883}
   panelAnimator: {fileID: 26778400}
+  plankSprite: {fileID: 0}
+  pancarteSkin: 1
 --- !u!114 &26778398
 MonoBehaviour:
   m_ObjectHideFlags: 0

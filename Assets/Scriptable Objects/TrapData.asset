@@ -13,11 +13,9 @@ MonoBehaviour:
   m_Name: TrapData
   m_EditorClassIdentifier: Assembly-CSharp::Game.Defenses.TrapData
   displayName: Mimic Chest
-  cost: 0
   maxHp: 999
   prefab: {fileID: 0}
   triggerRadius: 20
   enemyThreshold: 5
-  tauntDuration: 10
   damage: 100
   explosionRadius: 20

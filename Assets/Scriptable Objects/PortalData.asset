@@ -13,8 +13,7 @@ MonoBehaviour:
   m_Name: PortalData
   m_EditorClassIdentifier: Assembly-CSharp::Game.Defenses.PortalData
   displayName: Portal
-  cost: 20
   maxHp: 1000
   prefab: {fileID: 6282059400665795401, guid: 313750255fb166d43874a3073211fbe1, type: 3}
-  capacity: 10
+  capacity: 2
   triggerRadius: 5

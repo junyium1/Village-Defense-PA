@@ -15,28 +15,29 @@ MonoBehaviour:
   displayName: Golem
   icon: {fileID: 0}
   currentUpgradeLevel: 0
-  description: 
+  description: I smash everything and everyone !
   upgradeDescription: 
-  goldCost: 0
+  goldCost: 500
   crystalCost: 0
-  prefab: {fileID: 0}
+  prefab: {fileID: 4467710490024346862, guid: 39626d9e3f7301443bd7099ff97f87e5, type: 3}
+  placementSize: {x: 1, y: 1}
   upgrades:
   - description: 
-    crystalCost: 0
+    crystalCost: 150
+    damageMultiplier: 0
+    hpMultiplier: 2
+    speedMultiplier: 0
+    capacity: 0
+    maxNbTauntedEnemies: 0
+  - description: 
+    crystalCost: 200
     damageMultiplier: 1
     hpMultiplier: 1
     speedMultiplier: 1
     capacity: 0
     maxNbTauntedEnemies: 0
   - description: 
-    crystalCost: 0
-    damageMultiplier: 1
-    hpMultiplier: 1
-    speedMultiplier: 1
-    capacity: 0
-    maxNbTauntedEnemies: 0
-  - description: 
-    crystalCost: 0
+    crystalCost: 300
     damageMultiplier: 1
     hpMultiplier: 1
     speedMultiplier: 1

@@ -13,6 +13,5 @@ MonoBehaviour:
   m_Name: WallData
   m_EditorClassIdentifier: Assembly-CSharp::Game.Defenses.WallData
   displayName: Wall
-  cost: 0
   maxHp: 40
-  prefab: {fileID: 0}
+  prefab: {fileID: 4377256766647063405, guid: 35705d95964906744b8f7b452365496b, type: 3}

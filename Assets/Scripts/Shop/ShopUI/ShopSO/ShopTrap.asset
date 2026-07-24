@@ -15,29 +15,22 @@ MonoBehaviour:
   displayName: Trap
   icon: {fileID: 21300000, guid: 69462d0885e312d4caaebd66ccb99c71, type: 3}
   currentUpgradeLevel: 0
-  description: Attention je mords
+  description: Enemies get stuck
   upgradeDescription: 2 enemies/s (level 1)
-  goldCost: 300
+  goldCost: 100
   crystalCost: 0
   prefab: {fileID: 7818129557130110890, guid: 134209c9b0dfac34fb716615e037a370, type: 3}
   placementSize: {x: 1, y: 1}
   upgrades:
-  - description: 5 enemies/s (level 2)
-    crystalCost: 18
+  - description: 4 enemies/s (level 2)
+    crystalCost: 25
     damageMultiplier: 1
     hpMultiplier: 1
     speedMultiplier: 1
     capacity: 0
     maxNbTauntedEnemies: 0
-  - description: 
-    crystalCost: 0
-    damageMultiplier: 1
-    hpMultiplier: 1
-    speedMultiplier: 1
-    capacity: 0
-    maxNbTauntedEnemies: 0
-  - description: 
-    crystalCost: 0
+  - description: 8 enemies/s (level 3)
+    crystalCost: 50
     damageMultiplier: 1
     hpMultiplier: 1
     speedMultiplier: 1

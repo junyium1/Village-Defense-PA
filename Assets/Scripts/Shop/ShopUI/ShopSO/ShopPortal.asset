@@ -15,32 +15,32 @@ MonoBehaviour:
   displayName: Portal
   icon: {fileID: 21300000, guid: 74de35727ded47c43b7374fce8390561, type: 3}
   currentUpgradeLevel: 0
-  description: I eat enemies miam miam miam ! MDR
+  description: I eat enemies miam miam miam !
   upgradeDescription: 2 enemies/s (level 1)
-  goldCost: 18
+  goldCost: 200
   crystalCost: 0
-  prefab: {fileID: 0}
+  prefab: {fileID: 6282059400665795401, guid: 313750255fb166d43874a3073211fbe1, type: 3}
   placementSize: {x: 1, y: 1}
   upgrades:
-  - description: 5 enemies/s (level 2)
+  - description: 4 enemies/s (level 2)
     crystalCost: 50
-    damageMultiplier: 1
-    hpMultiplier: 1
-    speedMultiplier: 1
-    capacity: 0
+    damageMultiplier: 0
+    hpMultiplier: 0
+    speedMultiplier: 0
+    capacity: 4
     maxNbTauntedEnemies: 0
-  - description: 10 enemies/s (level 3)
+  - description: 8 enemies/s (level 3)
     crystalCost: 100
-    damageMultiplier: 1
-    hpMultiplier: 1
-    speedMultiplier: 1
-    capacity: 0
+    damageMultiplier: 0
+    hpMultiplier: 0
+    speedMultiplier: 0
+    capacity: 8
     maxNbTauntedEnemies: 0
-  - description: 
-    crystalCost: 0
-    damageMultiplier: 1
-    hpMultiplier: 1
-    speedMultiplier: 1
-    capacity: 0
+  - description: 16 enemies/s (level 4)
+    crystalCost: 200
+    damageMultiplier: 0
+    hpMultiplier: 0
+    speedMultiplier: 0
+    capacity: 16
     maxNbTauntedEnemies: 0
   defenseData: {fileID: 11400000, guid: 0949e520e2a1189468908baeaaa8d050, type: 2}
