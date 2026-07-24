@@ -15,11 +15,18 @@ MonoBehaviour:
   displayName: Wall
   icon: {fileID: 21300000, guid: e59c06669f692f348afde21f9503db54, type: 3}
   currentUpgradeLevel: 0
-  description: VOUUUS NE PASSEREZ PAS !!
-  upgradeDescription: 2 enemies/s (level 1) > 5 enemies/s (level 2)
+  description: You shall not pass !!
+  upgradeDescription: ' level 1'
   goldCost: 50
   crystalCost: 0
   prefab: {fileID: 7818129557130110890, guid: 134209c9b0dfac34fb716615e037a370, type: 3}
   placementSize: {x: 1, y: 1}
-  upgrades: []
-  defenseData: {fileID: 0}
+  upgrades:
+  - description: 2 times more life (level 2)
+    crystalCost: 500
+    damageMultiplier: 0
+    hpMultiplier: 2
+    speedMultiplier: 0
+    capacity: 0
+    maxNbTauntedEnemies: 0
+  defenseData: {fileID: 11400000, guid: 297a1e32100ff2f4699935dfaf09476a, type: 2}

@@ -43,4 +43,4 @@ MonoBehaviour:
     speedMultiplier: 1
     capacity: 0
     maxNbTauntedEnemies: 0
-  unitData: {fileID: 0}
+  unitData: {fileID: 11400000, guid: ceb438702b2a41742ab41ecc4c76a267, type: 2}
