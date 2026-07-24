@@ -220,6 +220,7 @@
 - Minimap : vérifier le polish (240 px, titre CARTE) et les **gros ronds violets** en niveau boss.
 **Acceptance :** checklist 100 % validée en Play → passer T-13/T-14 de `review` à `[x]` fermé.
 **Option (suite) :** toast en jeu au déblocage (store prêt, `EvaluateAll` monotone).
+> **Avancement (2026-07-24) :** rendu vérifié via MCP — Play MainMenuScene, `AchievementsScreen.Open()` forcé par `execute_code` : pancarte SUCCÈS + 4 lignes OK, « Connecté » DÉBLOQUÉ (compte lié), les 3 autres VERROUILLÉ (capture `T17_succes_force_open.png`). Reste manuel : touche Echap, déblocage par complétion de niveau, Wipe.
 
 ---
 
@@ -232,6 +233,20 @@
 - Vérifier : spawn point et chemin ennemi cohérents avec le nouvel emplacement, NavMesh/rebake si nécessaire, caméra de jeu cadre la zone, hors-limites OK.
 - ⚠️ Si l'objectif est en fait un **niveau supplémentaire** (2ᵉ zone + `LevelData` 9ᵉ) → le dire : c'est un ticket différent (dupliquer la zone au lieu de la déplacer).
 **Acceptance :** en Play, la partie se déroule sur le nouvel emplacement (placement défenses + vagues + minimap), 0 erreur console, captures avant/après validées.
+
+---
+
+## T-19 [x] (review) : Bouton « Rejoindre le Discord » dans l'écran de liaison
+**Zone :** Unity C# — `DiscordBridge/UI/LinkAccountScreen.cs` (100 % runtime, zéro scène).
+**Réalisation (2026-07-24) :** const `DiscordInviteUrl` (`https://discord.gg/qAtH7XuHc`) ; bouton « REJOINDRE LE DISCORD » créé dans `ApplyPancarteSkin` (listener vivant à chaque Play), inséré au-dessus de FERMER via `SetSiblingIndex`, style bois `RestyleButton`, `Application.OpenURL` (pattern `ShareButton`) ; **visible dans les 2 états** (lié / non lié — choix utilisateur). Bonus : `AchievementsScreen.Open()` passé `public` (hook de test MCP pour T-17). Compile 0 erreur CS (MCP). Commit `4113aaf`.
+**Acceptance :** bouton visible en Play, clic → navigateur sur l'invitation. À valider par l'utilisateur.
+
+---
+
+## T-20 [x] (review) : Drop zone visuels ennemis (prépa T-15)
+**Zone :** Unity C# — `Game/Units/EnemyVisuals.cs` (nouveau) + `CombatManager.SpawnEnemy` (+3 lignes) + `Assets/Resources/Enemies/`.
+**Réalisation (2026-07-24, délégué assistant, revue + fix compile chef) :** au spawn, charge `Resources/Enemies/enemy_default` (et `enemy_boss` en niveau boss via `LevelData.isBoss`, repli sur default) ; si trouvé → instancié en enfant « Visual », `MeshRenderer` du pion **masqué** (jamais détruit), **auto-scale** à la hauteur du pion (bounds) ; cache statique anti-recharge ; no-op si rien déposé (placeholder conservé). `LISEZ-MOI.txt` dans le dossier. Fix chef : `Menus.LevelSelectManager` qualifié (pas de `using Menus;` dans `CombatManager`). Compile 0 erreur CS (MCP). Commit `dd0941f`.
+**Acceptance :** glisser `enemy_default.fbx` dans `Assets/Resources/Enemies/` → Play : nouveau visuel sans autre intervention ; sans FBX : pion inchangé. ⚠️ FBX = LFS.
 
 ---
 
