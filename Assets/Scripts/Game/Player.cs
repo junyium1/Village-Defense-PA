@@ -74,11 +74,32 @@ namespace Game
             }
         }
 
-        // Triche (console ²) : débloque tout jusqu'au boss final (même cap que MarkLevelCompleted).
+        // Triche (console ²) : débloque tout jusqu'au boss final (même cap que MarkLevelCompleted)
+        // ET marque tous les niveaux comme terminés : les succès de progression (Premier pas /
+        // Tombeur de boss / Sauveur du village) lisent IsLevelCompleted, pas le déblocage.
         public void UnlockAllLevels()
         {
             HighestUnlockedLevel = 7;
+
+            // Source des ids = le catalogue Resources (toujours dispo), sinon la plage
+            // connue 0..7 en repli (même cap en dur que MarkLevelCompleted).
+            LevelData[] levels = LevelCatalog.GetAll();
+            if (levels.Length > 0)
+            {
+                for (int i = 0; i < levels.Length; i++)
+                    _completedLevels.Add(levels[i].levelID);
+            }
+            else
+            {
+                for (int id = 0; id <= 7; id++)
+                    _completedLevels.Add(id);
+            }
+
             SaveProgress();
+
+            // Prise en compte immédiate (sinon les succès attendraient la prochaine
+            // ouverture de l'écran, qui appelle déjà EvaluateAll).
+            AchievementStore.EvaluateAll();
         }
 
         public void ResetProgress()

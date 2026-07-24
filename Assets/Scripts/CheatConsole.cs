@@ -98,7 +98,7 @@ public class CheatConsole : MonoBehaviour
                 Player.Instance.UnlockAllLevels();
                 if (LevelSelectManager.Instance != null)
                     LevelSelectManager.Instance.RefreshButtons();
-                _feedback = "Tous les niveaux débloqués";
+                _feedback = "Tous les niveaux débloqués + terminés (succès inclus)";
                 break;
 
             default:

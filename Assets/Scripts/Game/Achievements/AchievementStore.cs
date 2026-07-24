@@ -1,7 +1,6 @@
 using System;
 using UnityEngine;
 using DiscordBridge.Session;
-using Menus;
 
 namespace Game
 {
@@ -44,7 +43,7 @@ namespace Game
                     () => SessionStore.IsLinked
                 ),
 
-                // Termine le premier niveau (plus petit levelID parmi les niveaux connus).
+                // Termine le premier niveau (plus petit levelID du catalogue).
                 new AchievementDef(
                     "level_1",
                     "Premier pas",
@@ -52,8 +51,7 @@ namespace Game
                     () =>
                     {
                         if (Player.Instance == null) return false;
-                        if (LevelSelectManager.Instance == null) return false;
-                        LevelData[] levels = LevelSelectManager.Instance.GetOrderedLevels();
+                        LevelData[] levels = LevelCatalog.GetAll();
                         if (levels.Length == 0) return false;
                         return Player.Instance.IsLevelCompleted(levels[0].levelID);
                     }
@@ -67,8 +65,7 @@ namespace Game
                     () =>
                     {
                         if (Player.Instance == null) return false;
-                        if (LevelSelectManager.Instance == null) return false;
-                        LevelData[] levels = LevelSelectManager.Instance.GetOrderedLevels();
+                        LevelData[] levels = LevelCatalog.GetAll();
                         for (int i = 0; i < levels.Length; i++)
                         {
                             if (levels[i].isBoss)
@@ -87,8 +84,7 @@ namespace Game
                     () =>
                     {
                         if (Player.Instance == null) return false;
-                        if (LevelSelectManager.Instance == null) return false;
-                        LevelData[] levels = LevelSelectManager.Instance.GetOrderedLevels();
+                        LevelData[] levels = LevelCatalog.GetAll();
                         if (levels.Length == 0) return false;
                         for (int i = 0; i < levels.Length; i++)
                         {
