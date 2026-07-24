@@ -78,7 +78,7 @@ namespace Menus
 
         // ----------------------- ouverture / fermeture -----------------------
 
-        void Open()
+        public void Open()
         {
             // Re-evalue les conditions a chaque ouverture : un succes peut se debloquer
             // pendant que l'ecran est ferme (ex : terminer un niveau puis revenir au menu).

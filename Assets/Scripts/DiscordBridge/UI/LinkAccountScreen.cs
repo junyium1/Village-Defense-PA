@@ -32,6 +32,9 @@ namespace DiscordBridge.UI
         [SerializeField] TextMeshProUGUI statusText;
         [SerializeField] Button closeButton;
 
+        // Invitation officielle : bouton permanent, visible dans les 2 etats (lie ou non).
+        const string DiscordInviteUrl = "https://discord.gg/qAtH7XuHc";
+
         [Header("Animation (optionnel)")]
         [SerializeField] UIPanelAnimator panelAnimator;
 
@@ -345,6 +348,22 @@ namespace DiscordBridge.UI
             {
                 SetLayout(closeButton.gameObject, 220f, 44f);
                 RestyleButton(closeButton, WoodNormal, WoodHover);
+            }
+
+            // Bouton d'invitation au serveur : visible dans les 2 etats,
+            // insere juste au-dessus de FERMER dans la colonne.
+            if (closeButton != null)
+            {
+                var joinGo = new GameObject("JoinDiscordButton", typeof(RectTransform), typeof(Image), typeof(Button));
+                joinGo.transform.SetParent(board, false);
+                joinGo.transform.SetSiblingIndex(closeButton.transform.GetSiblingIndex());
+                var joinLblGo = new GameObject("Label", typeof(RectTransform), typeof(TextMeshProUGUI));
+                joinLblGo.transform.SetParent(joinGo.transform, false);
+                joinLblGo.GetComponent<TextMeshProUGUI>().text = "REJOINDRE LE DISCORD";
+                Button joinBtn = joinGo.GetComponent<Button>();
+                RestyleButton(joinBtn, WoodNormal, WoodHover);
+                joinBtn.onClick.AddListener(() => Application.OpenURL(DiscordInviteUrl));
+                SetLayout(joinGo, 340f, 44f);
             }
 
             LayoutRebuilder.ForceRebuildLayoutImmediate(board);
